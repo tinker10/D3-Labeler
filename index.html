@@ -12,18 +12,7 @@
 </head>
 		
 <body>
-    <div style="width:150px;float:left">
-        <span id="corr-label">Correlation: </span><br>
-        <input type="range" min="-1.0" max="1.0" value="0.0" id="corr" step="0.01"/>
-    </div>
-    <div style="width:150px;float:left">
-        <span id="charge-label">Label charge: </span><br>
-        <input type="range" min="0" max="100" value="60.0" id="charge" step="1"/>
-    </div>
-    <button type="button" id="addone">Add one measurement</button>
     <button type="button" id="randomize20">Replace with 20</button>
-    <button type="button" id="randomize50">Replace with 50</button>
-    <button type="button" id="randomize100">Replace with 100</button>
 
 <script type="text/javascript">
 var w=960,h=500,
@@ -92,39 +81,16 @@ labelForce = d3.force_labels()
     .charge(-60)
     .on("tick",redrawLabels)
 
-
-
 // and now for the data functionality
 function randomize(count) {
     z1=d3.random.normal()
     z2=d3.random.normal()
     data=data.concat(d3.range(count || 100).map(function(d,i) { return {z1:z1(),z2:z2(),num:data.length+i}}))
-    correlate()
-}
-
-function correlate() {
-    var corr = d3.select("#corr").property("value")
-    d3.select("#corr-label").text("Correlation: "+d3.format("%")(corr))
-    
-    data.forEach(function(d) { d.x = x_mean+(d.z1*x_std),
-                                d.y = y_mean+y_std*(corr*d.z1+d.z2*Math.sqrt(1-Math.pow(corr,2)))})
-    refresh()
 }
 
 // and finally hook up the controls
 
 d3.select("#randomize20").on("click",function() { data=[];randomize(20)})
-d3.select("#randomize50").on("click",function() { data=[];randomize(50)})
-d3.select("#randomize100").on("click",function() { data=[];randomize(100)})
-d3.select("#addone").on("click",function() { randomize(1)})
-d3.select("#corr")
-    .on("change",function() { d3.select("#corr-label").text("Correlation: "+d3.format("%")(this.value))})
-    .on("mouseup",correlate)
-d3.select("#charge")
-    .on("change",function() { 
-        d3.select("#charge-label").text("Label charge: "+d3.format("f")(this.value))
-        labelForce.charge(-this.value).start()
-    })
 
 randomize()        
 </script>
