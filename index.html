@@ -17,12 +17,16 @@ body {
   stroke: #000;
 }
 
+.axis_label {
+  font: 10px sans-serif;
+}
+
 </style>
 <body>
 <script src="http://d3js.org/d3.v3.min.js"></script>
 <script>
 
-        var data = [
+    var data = [
                 {team:"Hawks", name:"Al Horford", gp:74, ppg:17.4, rpg:10.2, apg:3.2, per:17.8},
                 {team:"Hawks", name:"Jeff Teague", gp:80, ppg:14.6, rpg:2.3, apg:7.2, per:19.8},
                 {team:"Hawks", name:"Josh Smith", gp:76, ppg:17.5, rpg:8.4, apg:4.2, per:16.8},
@@ -84,62 +88,71 @@ body {
                 {team:"Knicks", name:"Tyson Chandler", gp:66, ppg:10.4, rpg:10.7, apg:0.9, per:18.9},
         ];
 
-var margin = {top: 20, right: 20, bottom: 30, left: 40},
-    width = 960 - margin.left - margin.right,
-    height = 500 - margin.top - margin.bottom;
+    var margin = {top: 20, right: 20, bottom: 30, left: 40},
+        width = 960 - margin.left - margin.right,
+        height = 500 - margin.top - margin.bottom;
 
-var x = d3.scale.linear()
-    .range([0, width]);
+    var x = d3.scale.linear()
+        .range([0, width]);
 
-var y = d3.scale.linear()
-    .range([height, 0]);
+    var y = d3.scale.linear()
+        .range([height, 0]);
 
-var xAxis = d3.svg.axis()
-    .scale(x)
-    .orient("bottom");
+    var xAxis = d3.svg.axis()
+        .scale(x)
+        .orient("bottom");
 
-var yAxis = d3.svg.axis()
-    .scale(y)
-    .orient("left");
+    var yAxis = d3.svg.axis()
+        .scale(y)
+        .orient("left");
 
-var svg = d3.select("body").append("svg")
-    .attr("width", width + margin.left + margin.right)
-    .attr("height", height + margin.top + margin.bottom)
-  .append("g")
-    .attr("transform", "translate(" + margin.left + "," + margin.top + ")");
+    var svg = d3.select("body").append("svg")
+        .attr("width", width + margin.left + margin.right)
+        .attr("height", height + margin.top + margin.bottom)
+        .append("g")
+        .attr("transform", "translate(" + margin.left + "," + margin.top + ")");
 
-  x.domain(d3.extent(data, function(d) { return d.gp; })).nice();
-  y.domain(d3.extent(data, function(d) { return d.ppg; })).nice();
+    x.domain(d3.extent(data, function(d) { return d.gp; })).nice();
+    y.domain(d3.extent(data, function(d) { return d.ppg; })).nice();
 
-  svg.append("g")
-      .attr("class", "x axis")
-      .attr("transform", "translate(0," + height + ")")
-      .call(xAxis)
-    .append("text")
-      .attr("class", "label")
-      .attr("x", width)
-      .attr("y", -6)
-      .style("text-anchor", "end")
-      .text("Games played");
+    svg.append("g")
+        .attr("class", "x axis")
+        .attr("transform", "translate(0," + height + ")")
+        .call(xAxis)
+        .append("text")
+        .attr("x", width)
+        .attr("y", -6)
+        .style("text-anchor", "end")
+        .text("Games played");
 
-  svg.append("g")
-      .attr("class", "y axis")
-      .call(yAxis)
-    .append("text")
-      .attr("class", "label")
-      .attr("transform", "rotate(-90)")
-      .attr("y", 6)
-      .attr("dy", ".71em")
-      .style("text-anchor", "end")
-      .text("Points per game")
+    svg.append("g")
+        .attr("class", "y axis")
+        .call(yAxis)
+        .append("text")
+        .attr("transform", "rotate(-90)")
+        .attr("y", 6)
+        .attr("dy", ".71em")
+        .style("text-anchor", "end")
+        .text("Points per game")
 
-  svg.selectAll(".dot")
-      .data(data)
-    .enter().append("circle")
-      .attr("class", "dot")
-      .attr("r", 4.0)
-      .attr("cx", function(d) { return x(d.gp); })
-      .attr("cy", function(d) { return y(d.ppg); })
-      .style("fill", 'red');
+    svg.selectAll(".dot")
+        .data(data)
+        .enter().append("circle")
+        .attr("class", "dot")
+        .attr("r", 4.0)
+        .attr("cx", function(d) { return x(d.gp); })
+        .attr("cy", function(d) { return y(d.ppg); })
+        .style("fill", 'red');
+
+    svg.selectAll(".axis_label")
+        .data(data)
+        .enter()
+        .append("text")
+        .text(function(d) { return d.name; })
+        .attr("x", function(d) { return x(d.gp); })
+        .attr("y", function(d) { return y(d.ppg); })
+        .attr("font-family", "sans-serif")
+        .attr("font-size", "9px")
+        .attr("fill", "black");
 
 </script>
