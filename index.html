@@ -1,98 +1,145 @@
 <!DOCTYPE html>
-<html>
-<head>
-    <script src="http://d3js.org/d3.v2.js"></script>
-    <script type="text/javascript" src="force_labels.js"></script>
-    <style>
-    .anchor { fill:blue}
-    .labelbox { fill:black;opacity:0.8}
-    .labeltext { fill:white;font-weight:bold;text-anchor:middle;font-size:16;font-family:  serif}
-    .link { stroke:gray;stroke-width:0.35}
-    </style>
-</head>
-		
+<meta charset="utf-8">
+<style>
+
+body {
+  font: 10px sans-serif;
+}
+
+.axis path,
+.axis line {
+  fill: none;
+  stroke: #000;
+  shape-rendering: crispEdges;
+}
+
+.dot {
+  stroke: #000;
+}
+
+</style>
 <body>
-    <button type="button" id="randomize20">Replace with 20</button>
+<script src="http://d3js.org/d3.v3.min.js"></script>
+<script>
 
-<script type="text/javascript">
-var w=960,h=500,
-    x_mean = w/2,
-    x_std = w/10,
-    y_mean = h/2,
-    y_std = h/10,
-    labelBox,link,
-    data=[];
+        var data = [
+                {team:"Hawks", name:"Al Horford", gp:74, ppg:17.4, rpg:10.2, apg:3.2, per:17.8},
+                {team:"Hawks", name:"Jeff Teague", gp:80, ppg:14.6, rpg:2.3, apg:7.2, per:19.8},
+                {team:"Hawks", name:"Josh Smith", gp:76, ppg:17.5, rpg:8.4, apg:4.2, per:16.8},
+                {team:"Celtics", name:"Paul Pierce", gp:77, ppg:18.6, rpg:6.3, apg:4.8, per:19.1},
+                {team:"Celtics", name:"Kevin Garnett", gp:68, ppg:14.8, rpg:7.8, apg:2.3, per:19.2},
+                {team:"Celtics", name:"Rajon Rondo", gp:38, ppg:13.7, rpg:5.6, apg:11.1, per:18.1},
+                {team:"Nets", name:"Brook Lopez", gp:74, ppg:19.4, rpg:6.9, apg:0.9, per:24.8},
+                {team:"Nets", name:"Deron Williams", gp:78, ppg:18.9, rpg:3.0, apg:7.7, per:20.4},
+                {team:"Nets", name:"Joe Johnson", gp:72, ppg:16.3, rpg:3.0, apg:3.5, per:14.1},
+                {team:"Bobcats", name:"Kemba Walker", gp:82, ppg:17.7, rpg:3.5, apg:5.7, per:18.9},
+                {team:"Bobcats", name:"Gerald Henderson", gp:68, ppg:15.5, rpg:3.7, apg:2.6, per:16.5},
+                {team:"Bobcats", name:"Ramon Sessions", gp:61, ppg:14.4, rpg:2.8, apg:3.8, per:17.8},
+                {team:"Bulls", name:"Joakim Noah", gp:66, ppg:11.9, rpg:11.1, apg:4.0, per:18.2},
+                {team:"Bulls", name:"Carlos Boozer", gp:79, ppg:16.2, rpg:9.8, apg:2.3, per:17.2},
+                {team:"Bulls", name:"Luol Deng", gp:75, ppg:16.5, rpg:6.3, apg:3.0, per:15.1},
+                {team:"Cavaliers", name:"Anderson Varejao", gp:25, ppg:14.1, rpg:14.4, apg:3.4, per:21.7},
+                {team:"Cavaliers", name:"Kyrie Irving", gp:59, ppg:22.5, rpg:3.7, apg:5.9, per:21.5},
+                {team:"Cavaliers", name:"Tristan Thompson", gp:82, ppg:11.7, rpg:9.4, apg:1.3, per:16.1},
+                {team:"Mavericks", name:"Dirk Nowitzki", gp:53, ppg:17.3, rpg:6.8, apg:2.5, per:19.9},
+                {team:"Mavericks", name:"Shawn Marion", gp:67, ppg:12.1, rpg:7.8, apg:2.4, per:18.0},
+                {team:"Mavericks", name:"Darren Collison", gp:81, ppg:12.0, rpg:2.7, apg:5.1, per:16.4},
+                {team:"Nuggets", name:"Kenneth Faried", gp:80, ppg:11.5, rpg:9.2, apg:1.0, per:18.5},
+                {team:"Nuggets", name:"Ty Lawson", gp:73, ppg:16.7, rpg:2.7, apg:6.9, per:18.0},
+                {team:"Nuggets", name:"Andre Iguodala", gp:80, ppg:13.0, rpg:5.3, apg:5.4, per:15.3},
+                {team:"Pistons", name:"Greg Monroe", gp:81, ppg:16.0, rpg:9.6, apg:3.5, per:19.5},
+                {team:"Pistons", name:"Brandon Knight", gp:75, ppg:13.3, rpg:3.3, apg:4.0, per:12.0},
+                {team:"Pistons", name:"Rodney Stuckey", gp:76, ppg:11.5, rpg:2.8, apg:3.6, per:13.0},
+                {team:"Warriors", name:"Stephen Curry", gp:78, ppg:22.9, rpg:4.0, apg:6.9, per:21.3},
+                {team:"Warriors", name:"David Lee", gp:79, ppg:18.5, rpg:11.2, apg:3.5, per:19.2},
+                {team:"Warriors", name:"Klay Thompson", gp:82, ppg:16.6, rpg:3.7, apg:2.2, per:12.7},
+                {team:"Rockets", name:"James Harden", gp:78, ppg:25.9, rpg:4.9, apg:5.8, per:23.0},
+                {team:"Rockets", name:"Chandler Parsons", gp:76, ppg:15.5, rpg:5.3, apg:3.5, per:15.3},
+                {team:"Rockets", name:"Jeremy Lin", gp:82, ppg:13.4, rpg:3.0, apg:6.1, per:14.9},
+                {team:"Pacers", name:"David West", gp:73, ppg:17.1, rpg:7.7, apg:2.9, per:20.1},
+                {team:"Pacers", name:"Roy Hibbert", gp:79, ppg:11.9, rpg:8.3, apg:1.4, per:17.3},
+                {team:"Pacers", name:"Paul George", gp:79, ppg:17.4, rpg:7.6, apg:4.1, per:16.8},
+                {team:"Clippers", name:"Blake Griffin", gp:80, ppg:18.0, rpg:8.3, apg:3.7, per:22.4},
+                {team:"Clippers", name:"Chris Paul", gp:70, ppg:16.9, rpg:3.7, apg:9.7, per:26.4},
+                {team:"Clippers", name:"Jamal Crawford", gp:76, ppg:16.5, rpg:1.7, apg:2.5, per:16.9},
+                {team:"Lakers", name:"Kobe Bryant", gp:78, ppg:27.3, rpg:5.6, apg:6.0, per:23.1},
+                {team:"Lakers", name:"Dwight Howard", gp:76, ppg:17.1, rpg:12.4, apg:1.4, per:19.5},
+                {team:"Lakers", name:"Pau Gasol", gp:49, ppg:13.7, rpg:8.6, apg:4.1, per:16.7},
+                {team:"Grizzlies", name:"Marc Gasol", gp:80, ppg:14.1, rpg:7.8, apg:4.0, per:19.6},
+                {team:"Grizzlies", name:"Mike Conley", gp:80, ppg:14.6, rpg:2.8, apg:6.1, per:18.4},
+                {team:"Grizzlies", name:"Zach Randolph", gp:76, ppg:15.4, rpg:11.2, apg:1.4, per:17.9},
+                {team:"Heat", name:"Lebron James", gp:76, ppg:26.8, rpg:8.0, apg:7.3, per:31.7},
+                {team:"Heat", name:"Dwayne Wade", gp:69, ppg:21.2, rpg:5.0, apg:5.1, per:24.0},
+                {team:"Heat", name:"Chris Bosh", gp:74, ppg:16.6, rpg:6.8, apg:1.7, per:20.1},
+                {team:"Bucks", name:"Monta Ellis", gp:82, ppg:19.2, rpg:3.9, apg:6.0, per:16.3},
+                {team:"Bucks", name:"Brandon Jennings", gp:80, ppg:17.5, rpg:3.1, apg:6.5, per:16.2},
+                {team:"Bucks", name:"Larry Sanders", gp:71, ppg:9.8, rpg:9.5, apg:1.2, per:18.8},
+                {team:"Timberwolves", name:"Kevin Love", gp:18, ppg:18.3, rpg:14.0, apg:2.3, per:18.0},
+                {team:"Timberwolves", name:"Nikola Pekovic", gp:62, ppg:16.3, rpg:8.8, apg:0.9, per:20.3},
+                {team:"Timberwolves", name:"Ricky Rubio", gp:57, ppg:10.7, rpg:4.0, apg:7.3, per:16.2},
+                {team:"Hornets", name:"Eric Gordon", gp:42, ppg:17.0, rpg:1.8, apg:3.3, per:15.4},
+                {team:"Hornets", name:"Greivis Vasquez", gp:78, ppg:13.9, rpg:4.3, apg:9.0, per:16.3},
+                {team:"Hornets", name:"Anthony Davis", gp:64, ppg:13.5, rpg:8.2, apg:1.0, per:21.8},
+                {team:"Knicks", name:"Carmelo Anthony", gp:67, ppg:28.7, rpg:6.9, apg:2.6, per:24.8},
+                {team:"Knicks", name:"Tyson Chandler", gp:66, ppg:10.4, rpg:10.7, apg:0.9, per:18.9},
+        ];
 
+var margin = {top: 20, right: 20, bottom: 30, left: 40},
+    width = 960 - margin.left - margin.right,
+    height = 500 - margin.top - margin.bottom;
 
-var svg=d3.select("body")
-    .append("svg:svg")
-    .attr("height",h)
-    .attr("width",w)
-    
-function refresh() {
-    // plot the data as usual
-    anchors = svg.selectAll(".anchor").data(data,function(d,i) { return i})
-    anchors.exit().attr("class","exit").transition().duration(1000).style("opacity",0).remove()
-    anchors.enter().append("circle").attr("class","anchor").attr("r",4).attr("cx",function(d) { return d.x}).attr("cy",function(d) { return h-d.y})
-    anchors.transition()
-        .delay(function(d,i) { return i*10})
-        .duration(1500)
-        .attr("cx",function(d) { return d.x})
-        .attr("cy",function(d) { return h-d.y})
-    
-        
-    // Now for the labels
-    anchors.call(labelForce.update)  //  This is the only function call needed, the rest is just drawing the labels
-       
-    labels = svg.selectAll(".labels").data(data,function(d,i) { return i})
-    labels.exit().attr("class","exit").transition().delay(0).duration(500).style("opacity",0).remove()
-    
-    // Draw the labelbox, caption and the link
-        newLabels = labels.enter().append("g").attr("class","labels")
+var x = d3.scale.linear()
+    .range([0, width]);
 
-        newLabelBox = newLabels.append("g").attr("class","labelbox")
-                newLabelBox.append("circle").attr("r",11)
-                newLabelBox.append("text").attr("class","labeltext").attr("y",6)
-        newLabels.append("line").attr("class","link")
-        
-        labelBox = svg.selectAll(".labels").selectAll(".labelbox")
-        links = svg.selectAll(".link")
-        labelBox.selectAll("text").text(function(d) { return d.num})
+var y = d3.scale.linear()
+    .range([height, 0]);
 
-}
+var xAxis = d3.svg.axis()
+    .scale(x)
+    .orient("bottom");
 
-function redrawLabels() {
-    labelBox
-        .attr("transform",function(d) { return "translate("+d.labelPos.x+" "+d.labelPos.y+")"})
+var yAxis = d3.svg.axis()
+    .scale(y)
+    .orient("left");
 
-    links
-        .attr("x1",function(d) { return d.anchorPos.x})
-        .attr("y1",function(d) { return d.anchorPos.y})
-        .attr("x2",function(d) { return d.labelPos.x})
-        .attr("y2",function(d) { return d.labelPos.y})
-}        
-        
+var svg = d3.select("body").append("svg")
+    .attr("width", width + margin.left + margin.right)
+    .attr("height", height + margin.top + margin.bottom)
+  .append("g")
+    .attr("transform", "translate(" + margin.left + "," + margin.top + ")");
 
-// Initialize the label-forces
-labelForce = d3.force_labels()
-    .linkDistance(0.0)
-    .gravity(0)
-    .nodes([]).links([])
-    .charge(-60)
-    .on("tick",redrawLabels)
+  x.domain(d3.extent(data, function(d) { return d.gp; })).nice();
+  y.domain(d3.extent(data, function(d) { return d.ppg; })).nice();
 
-// and now for the data functionality
-function randomize(count) {
-    z1=d3.random.normal()
-    z2=d3.random.normal()
-    data=data.concat(d3.range(count || 100).map(function(d,i) { return {z1:z1(),z2:z2(),num:data.length+i}}))
-}
+  svg.append("g")
+      .attr("class", "x axis")
+      .attr("transform", "translate(0," + height + ")")
+      .call(xAxis)
+    .append("text")
+      .attr("class", "label")
+      .attr("x", width)
+      .attr("y", -6)
+      .style("text-anchor", "end")
+      .text("Games played");
 
-// and finally hook up the controls
+  svg.append("g")
+      .attr("class", "y axis")
+      .call(yAxis)
+    .append("text")
+      .attr("class", "label")
+      .attr("transform", "rotate(-90)")
+      .attr("y", 6)
+      .attr("dy", ".71em")
+      .style("text-anchor", "end")
+      .text("Points per game")
 
-d3.select("#randomize20").on("click",function() { data=[];randomize(20)})
+  svg.selectAll(".dot")
+      .data(data)
+    .enter().append("circle")
+      .attr("class", "dot")
+      .attr("r", 4.0)
+      .attr("cx", function(d) { return x(d.gp); })
+      .attr("cy", function(d) { return y(d.ppg); })
+      .style("fill", 'red');
 
-randomize()        
 </script>
-</body>
-</html>
