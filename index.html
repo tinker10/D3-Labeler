@@ -21,6 +21,8 @@ body {
   font: 10px sans-serif;
 }
 
+.link { stroke:gray;stroke-width:0.5}
+
 </style>
 <body>
 <script src="http://d3js.org/d3.v3.min.js"></script>
@@ -32,7 +34,6 @@ body {
                 {team:"Hawks", name:"Josh Smith", gp:76, ppg:17.5, rpg:8.4, apg:4.2, per:16.8},
                 {team:"Celtics", name:"Paul Pierce", gp:77, ppg:18.6, rpg:6.3, apg:4.8, per:19.1},
                 {team:"Celtics", name:"Kevin Garnett", gp:68, ppg:14.8, rpg:7.8, apg:2.3, per:19.2},
-                {team:"Celtics", name:"Rajon Rondo", gp:38, ppg:13.7, rpg:5.6, apg:11.1, per:18.1},
                 {team:"Nets", name:"Brook Lopez", gp:74, ppg:19.4, rpg:6.9, apg:0.9, per:24.8},
                 {team:"Nets", name:"Deron Williams", gp:78, ppg:18.9, rpg:3.0, apg:7.7, per:20.4},
                 {team:"Nets", name:"Joe Johnson", gp:72, ppg:16.3, rpg:3.0, apg:3.5, per:14.1},
@@ -40,37 +41,9 @@ body {
                 {team:"Bobcats", name:"Gerald Henderson", gp:68, ppg:15.5, rpg:3.7, apg:2.6, per:16.5},
                 {team:"Bobcats", name:"Ramon Sessions", gp:61, ppg:14.4, rpg:2.8, apg:3.8, per:17.8},
                 {team:"Bulls", name:"Joakim Noah", gp:66, ppg:11.9, rpg:11.1, apg:4.0, per:18.2},
-                {team:"Bulls", name:"Carlos Boozer", gp:79, ppg:16.2, rpg:9.8, apg:2.3, per:17.2},
-                {team:"Bulls", name:"Luol Deng", gp:75, ppg:16.5, rpg:6.3, apg:3.0, per:15.1},
-                {team:"Cavaliers", name:"Anderson Varejao", gp:25, ppg:14.1, rpg:14.4, apg:3.4, per:21.7},
-                {team:"Cavaliers", name:"Kyrie Irving", gp:59, ppg:22.5, rpg:3.7, apg:5.9, per:21.5},
-                {team:"Cavaliers", name:"Tristan Thompson", gp:82, ppg:11.7, rpg:9.4, apg:1.3, per:16.1},
-                {team:"Mavericks", name:"Dirk Nowitzki", gp:53, ppg:17.3, rpg:6.8, apg:2.5, per:19.9},
-                {team:"Mavericks", name:"Shawn Marion", gp:67, ppg:12.1, rpg:7.8, apg:2.4, per:18.0},
-                {team:"Mavericks", name:"Darren Collison", gp:81, ppg:12.0, rpg:2.7, apg:5.1, per:16.4},
-                {team:"Nuggets", name:"Kenneth Faried", gp:80, ppg:11.5, rpg:9.2, apg:1.0, per:18.5},
-                {team:"Nuggets", name:"Ty Lawson", gp:73, ppg:16.7, rpg:2.7, apg:6.9, per:18.0},
-                {team:"Nuggets", name:"Andre Iguodala", gp:80, ppg:13.0, rpg:5.3, apg:5.4, per:15.3},
-                {team:"Pistons", name:"Greg Monroe", gp:81, ppg:16.0, rpg:9.6, apg:3.5, per:19.5},
-                {team:"Pistons", name:"Brandon Knight", gp:75, ppg:13.3, rpg:3.3, apg:4.0, per:12.0},
-                {team:"Pistons", name:"Rodney Stuckey", gp:76, ppg:11.5, rpg:2.8, apg:3.6, per:13.0},
-                {team:"Warriors", name:"Stephen Curry", gp:78, ppg:22.9, rpg:4.0, apg:6.9, per:21.3},
-                {team:"Warriors", name:"David Lee", gp:79, ppg:18.5, rpg:11.2, apg:3.5, per:19.2},
-                {team:"Warriors", name:"Klay Thompson", gp:82, ppg:16.6, rpg:3.7, apg:2.2, per:12.7},
                 {team:"Rockets", name:"James Harden", gp:78, ppg:25.9, rpg:4.9, apg:5.8, per:23.0},
-                {team:"Rockets", name:"Chandler Parsons", gp:76, ppg:15.5, rpg:5.3, apg:3.5, per:15.3},
                 {team:"Rockets", name:"Jeremy Lin", gp:82, ppg:13.4, rpg:3.0, apg:6.1, per:14.9},
                 {team:"Pacers", name:"David West", gp:73, ppg:17.1, rpg:7.7, apg:2.9, per:20.1},
-                {team:"Pacers", name:"Roy Hibbert", gp:79, ppg:11.9, rpg:8.3, apg:1.4, per:17.3},
-                {team:"Pacers", name:"Paul George", gp:79, ppg:17.4, rpg:7.6, apg:4.1, per:16.8},
-                {team:"Clippers", name:"Blake Griffin", gp:80, ppg:18.0, rpg:8.3, apg:3.7, per:22.4},
-                {team:"Clippers", name:"Chris Paul", gp:70, ppg:16.9, rpg:3.7, apg:9.7, per:26.4},
-                {team:"Clippers", name:"Jamal Crawford", gp:76, ppg:16.5, rpg:1.7, apg:2.5, per:16.9},
-                {team:"Lakers", name:"Kobe Bryant", gp:78, ppg:27.3, rpg:5.6, apg:6.0, per:23.1},
-                {team:"Lakers", name:"Dwight Howard", gp:76, ppg:17.1, rpg:12.4, apg:1.4, per:19.5},
-                {team:"Lakers", name:"Pau Gasol", gp:49, ppg:13.7, rpg:8.6, apg:4.1, per:16.7},
-                {team:"Grizzlies", name:"Marc Gasol", gp:80, ppg:14.1, rpg:7.8, apg:4.0, per:19.6},
-                {team:"Grizzlies", name:"Mike Conley", gp:80, ppg:14.6, rpg:2.8, apg:6.1, per:18.4},
                 {team:"Grizzlies", name:"Zach Randolph", gp:76, ppg:15.4, rpg:11.2, apg:1.4, per:17.9},
                 {team:"Heat", name:"Lebron James", gp:76, ppg:26.8, rpg:8.0, apg:7.3, per:31.7},
                 {team:"Heat", name:"Dwayne Wade", gp:69, ppg:21.2, rpg:5.0, apg:5.1, per:24.0},
@@ -78,11 +51,8 @@ body {
                 {team:"Bucks", name:"Monta Ellis", gp:82, ppg:19.2, rpg:3.9, apg:6.0, per:16.3},
                 {team:"Bucks", name:"Brandon Jennings", gp:80, ppg:17.5, rpg:3.1, apg:6.5, per:16.2},
                 {team:"Bucks", name:"Larry Sanders", gp:71, ppg:9.8, rpg:9.5, apg:1.2, per:18.8},
-                {team:"Timberwolves", name:"Kevin Love", gp:18, ppg:18.3, rpg:14.0, apg:2.3, per:18.0},
                 {team:"Timberwolves", name:"Nikola Pekovic", gp:62, ppg:16.3, rpg:8.8, apg:0.9, per:20.3},
                 {team:"Timberwolves", name:"Ricky Rubio", gp:57, ppg:10.7, rpg:4.0, apg:7.3, per:16.2},
-                {team:"Hornets", name:"Eric Gordon", gp:42, ppg:17.0, rpg:1.8, apg:3.3, per:15.4},
-                {team:"Hornets", name:"Greivis Vasquez", gp:78, ppg:13.9, rpg:4.3, apg:9.0, per:16.3},
                 {team:"Hornets", name:"Anthony Davis", gp:64, ppg:13.5, rpg:8.2, apg:1.0, per:21.8},
                 {team:"Knicks", name:"Carmelo Anthony", gp:67, ppg:28.7, rpg:6.9, apg:2.6, per:24.8},
                 {team:"Knicks", name:"Tyson Chandler", gp:66, ppg:10.4, rpg:10.7, apg:0.9, per:18.9},
@@ -90,7 +60,8 @@ body {
 
     var margin = {top: 20, right: 20, bottom: 30, left: 40},
         width = 960 - margin.left - margin.right,
-        height = 500 - margin.top - margin.bottom;
+        height = 500 - margin.top - margin.bottom,
+        link;
 
     var x = d3.scale.linear()
         .range([0, width]);
@@ -115,6 +86,20 @@ body {
     x.domain(d3.extent(data, function(d) { return d.gp; })).nice();
     y.domain(d3.extent(data, function(d) { return d.ppg; })).nice();
 
+    // will need this later
+    /*
+    function redrawLabels() {
+    labelBox
+        .attr("transform",function(d) { return "translate("+d.labelPos.x+" "+d.labelPos.y+")"})
+
+    links
+        .attr("x1",function(d) { return d.anchorPos.x})
+        .attr("y1",function(d) { return d.anchorPos.y})
+        .attr("x2",function(d) { return d.labelPos.x})
+        .attr("y2",function(d) { return d.labelPos.y})
+    } 
+    */
+
     svg.append("g")
         .attr("class", "x axis")
         .attr("transform", "translate(0," + height + ")")
@@ -135,7 +120,7 @@ body {
         .style("text-anchor", "end")
         .text("Points per game")
 
-    svg.selectAll(".dot")
+    dots = svg.selectAll(".dot")
         .data(data)
         .enter().append("circle")
         .attr("class", "dot")
@@ -144,15 +129,25 @@ body {
         .attr("cy", function(d) { return y(d.ppg); })
         .style("fill", 'red');
 
-    svg.selectAll(".axis_label")
+    labels = svg.selectAll(".axis_label")
         .data(data)
         .enter()
         .append("text")
+        .attr('text-anchor', 'start')
         .text(function(d) { return d.name; })
-        .attr("x", function(d) { return x(d.gp); })
-        .attr("y", function(d) { return y(d.ppg); })
-        .attr("font-family", "sans-serif")
-        .attr("font-size", "9px")
+        .attr("x", function(d) { return x(d.gp) + 20; })
+        .attr("y", function(d) { return y(d.ppg) + 20; })
         .attr("fill", "black");
+
+    links = svg.selectAll(".link")
+        .data(data)
+        .enter()
+        .append("line")
+        .attr("x1", function(d) { return x(d.gp); })
+        .attr("y1", function(d) { return y(d.ppg); })
+        .attr("x2", function(d) { return x(d.gp) + 20; })
+        .attr("y2", function(d) { return y(d.ppg) + 20; })
+        .attr("stroke-width", 0.5)
+        .attr("stroke", "gray");
 
 </script>
