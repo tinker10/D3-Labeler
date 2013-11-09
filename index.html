@@ -26,6 +26,8 @@ body {
 </style>
 <body>
 <script src="http://d3js.org/d3.v3.min.js"></script>
+<script src="sa_labels.js"></script>
+<script src="bullet.js"></script>
 <script>
 
     var data = [
@@ -129,25 +131,63 @@ body {
         .attr("cy", function(d) { return y(d.ppg); })
         .style("fill", 'red');
 
+    label_centers = []
+    dots.each(function(d, i) {
+        // console.log(i+" "+d.gp);
+        label_centers.push({x: d.gp, y: d.ppg, name: d.name});
+    });
+
     labels = svg.selectAll(".axis_label")
-        .data(data)
+        .data(label_centers)
         .enter()
         .append("text")
         .attr('text-anchor', 'start')
         .text(function(d) { return d.name; })
-        .attr("x", function(d) { return x(d.gp) + 20; })
-        .attr("y", function(d) { return y(d.ppg) + 20; })
+        .attr("x", function(d) { return x(d.x); })
+        .attr("y", function(d) { return y(d.y); })
         .attr("fill", "black");
 
     links = svg.selectAll(".link")
-        .data(data)
+        .data(label_centers)
         .enter()
         .append("line")
-        .attr("x1", function(d) { return x(d.gp); })
-        .attr("y1", function(d) { return y(d.ppg); })
-        .attr("x2", function(d) { return x(d.gp) + 20; })
-        .attr("y2", function(d) { return y(d.ppg) + 20; })
+        .attr("x1", function(d) { return x(d.x); })
+        .attr("y1", function(d) { return y(d.y); })
+        .attr("x2", function(d) { return x(d.x); })
+        .attr("y2", function(d) { return y(d.y); })
         .attr("stroke-width", 0.5)
         .attr("stroke", "gray");
+
+    var chart = d3.anneal()
+    .nodes(label_centers);
+
+    function redrawLabels() {
+        labels
+        .attr("x", function(d) { return x(d.x); })
+        .attr("y", function(d) { return y(d.y); });
+
+        links
+        .attr("x2",function(d) { return x(d.x); })
+        .attr("y2",function(d) { return y(d.y); });
+    }
+
+    function sweep(label_centers) {
+        var m = label_centers.length;
+        // console.log(m)
+        for (var i = 0; i < m; i++) {
+            label_centers[i].x += (Math.random() - 0.5) * 5;
+            label_centers[i].y += (Math.random() - 0.5) * 5;
+        }
+    }
+
+    // sweep(label_centers)
+    // redrawLabels()
+
+    for (var i = 0; i < 10; i++) {
+        console.log(i)
+        sweep(label_centers)
+        redrawLabels()
+    }
+
 
 </script>
