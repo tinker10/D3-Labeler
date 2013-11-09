@@ -161,31 +161,23 @@ body {
     var chart = d3.anneal()
     .nodes(label_centers);
 
-    function redrawLabels() {
+    function redrawLabels(label_centers) {
         labels
+        .transition()
+        .duration(1000)
         .attr("x", function(d) { return x(d.x); })
         .attr("y", function(d) { return y(d.y); });
 
         links
+        .transition()
+        .duration(1000)
         .attr("x2",function(d) { return x(d.x); })
         .attr("y2",function(d) { return y(d.y); });
     }
 
-    function sweep(label_centers) {
-        var m = label_centers.length;
-        // console.log(m)
-        for (var i = 0; i < m; i++) {
-            label_centers[i].x += (Math.random() - 0.5) * 5;
-            label_centers[i].y += (Math.random() - 0.5) * 5;
-        }
-    }
-
-    // sweep(label_centers)
-    // redrawLabels()
-
-    for (var i = 0; i < 10; i++) {
+    for (var i = 0; i < 5; i++) {
         console.log(i)
-        sweep(label_centers)
+        chart.sweep()
         redrawLabels()
     }
 
