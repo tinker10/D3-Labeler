@@ -21,50 +21,29 @@ body {
   font: 10px sans-serif;
 }
 
+.label {
+  font: 10px sans-serif;
+}
+
 .link { stroke:gray;stroke-width:0.5}
 
 </style>
 <body>
 <script src="http://d3js.org/d3.v3.min.js"></script>
-<script src="sa_labels.js"></script>
 <script src="bullet.js"></script>
 <script>
 
-    var data = [
-                {team:"Hawks", name:"Al Horford", gp:74, ppg:17.4, rpg:10.2, apg:3.2, per:17.8},
-                {team:"Hawks", name:"Jeff Teague", gp:80, ppg:14.6, rpg:2.3, apg:7.2, per:19.8},
-                {team:"Hawks", name:"Josh Smith", gp:76, ppg:17.5, rpg:8.4, apg:4.2, per:16.8},
-                {team:"Celtics", name:"Paul Pierce", gp:77, ppg:18.6, rpg:6.3, apg:4.8, per:19.1},
-                {team:"Celtics", name:"Kevin Garnett", gp:68, ppg:14.8, rpg:7.8, apg:2.3, per:19.2},
-                {team:"Nets", name:"Brook Lopez", gp:74, ppg:19.4, rpg:6.9, apg:0.9, per:24.8},
-                {team:"Nets", name:"Deron Williams", gp:78, ppg:18.9, rpg:3.0, apg:7.7, per:20.4},
-                {team:"Nets", name:"Joe Johnson", gp:72, ppg:16.3, rpg:3.0, apg:3.5, per:14.1},
-                {team:"Bobcats", name:"Kemba Walker", gp:82, ppg:17.7, rpg:3.5, apg:5.7, per:18.9},
-                {team:"Bobcats", name:"Gerald Henderson", gp:68, ppg:15.5, rpg:3.7, apg:2.6, per:16.5},
-                {team:"Bobcats", name:"Ramon Sessions", gp:61, ppg:14.4, rpg:2.8, apg:3.8, per:17.8},
-                {team:"Bulls", name:"Joakim Noah", gp:66, ppg:11.9, rpg:11.1, apg:4.0, per:18.2},
-                {team:"Rockets", name:"James Harden", gp:78, ppg:25.9, rpg:4.9, apg:5.8, per:23.0},
-                {team:"Rockets", name:"Jeremy Lin", gp:82, ppg:13.4, rpg:3.0, apg:6.1, per:14.9},
-                {team:"Pacers", name:"David West", gp:73, ppg:17.1, rpg:7.7, apg:2.9, per:20.1},
-                {team:"Grizzlies", name:"Zach Randolph", gp:76, ppg:15.4, rpg:11.2, apg:1.4, per:17.9},
-                {team:"Heat", name:"Lebron James", gp:76, ppg:26.8, rpg:8.0, apg:7.3, per:31.7},
-                {team:"Heat", name:"Dwayne Wade", gp:69, ppg:21.2, rpg:5.0, apg:5.1, per:24.0},
-                {team:"Heat", name:"Chris Bosh", gp:74, ppg:16.6, rpg:6.8, apg:1.7, per:20.1},
-                {team:"Bucks", name:"Monta Ellis", gp:82, ppg:19.2, rpg:3.9, apg:6.0, per:16.3},
-                {team:"Bucks", name:"Brandon Jennings", gp:80, ppg:17.5, rpg:3.1, apg:6.5, per:16.2},
-                {team:"Bucks", name:"Larry Sanders", gp:71, ppg:9.8, rpg:9.5, apg:1.2, per:18.8},
-                {team:"Timberwolves", name:"Nikola Pekovic", gp:62, ppg:16.3, rpg:8.8, apg:0.9, per:20.3},
-                {team:"Timberwolves", name:"Ricky Rubio", gp:57, ppg:10.7, rpg:4.0, apg:7.3, per:16.2},
-                {team:"Hornets", name:"Anthony Davis", gp:64, ppg:13.5, rpg:8.2, apg:1.0, per:21.8},
-                {team:"Knicks", name:"Carmelo Anthony", gp:67, ppg:28.7, rpg:6.9, apg:2.6, per:24.8},
-                {team:"Knicks", name:"Tyson Chandler", gp:66, ppg:10.4, rpg:10.7, apg:0.9, per:18.9},
-        ];
+    var data = [];
 
     var margin = {top: 20, right: 20, bottom: 30, left: 40},
         width = 960 - margin.left - margin.right,
         height = 500 - margin.top - margin.bottom,
+        x_mean = width/2,
+        x_std = width/4,
+        y_mean = height/2,
+        y_std = height/4,
         link;
-
+/*
     var x = d3.scale.linear()
         .range([0, width]);
 
@@ -78,30 +57,41 @@ body {
     var yAxis = d3.svg.axis()
         .scale(y)
         .orient("left");
-
+*/
     var svg = d3.select("body").append("svg")
         .attr("width", width + margin.left + margin.right)
         .attr("height", height + margin.top + margin.bottom)
         .append("g")
         .attr("transform", "translate(" + margin.left + "," + margin.top + ")");
 
-    x.domain(d3.extent(data, function(d) { return d.gp; })).nice();
-    y.domain(d3.extent(data, function(d) { return d.ppg; })).nice();
+    // x.domain(d3.extent(data, function(d) { return d.gp; })).nice();
+    // y.domain(d3.extent(data, function(d) { return d.ppg; })).nice();
 
-    // will need this later
-    /*
-    function redrawLabels() {
-    labelBox
-        .attr("transform",function(d) { return "translate("+d.labelPos.x+" "+d.labelPos.y+")"})
+    // Useful functions
+    function redrawLabels(label_centers) {
+        labels
+        .transition()
+        .duration(1000)
+        .attr("x", function(d) { return (d.x); })
+        .attr("y", function(d) { return (d.y); });
 
-    links
-        .attr("x1",function(d) { return d.anchorPos.x})
-        .attr("y1",function(d) { return d.anchorPos.y})
-        .attr("x2",function(d) { return d.labelPos.x})
-        .attr("y2",function(d) { return d.labelPos.y})
-    } 
-    */
+        links
+        .transition()
+        .duration(1000)
+        .attr("x2",function(d) { return (d.x); })
+        .attr("y2",function(d) { return (d.y); });
+    }
 
+    function randomize(count) {
+        for (var i = 0; i < count; i++) {
+            var xval=x_mean + (2 * Math.random() - 1.0) * x_std;
+            var yval=y_mean + (2 * Math.random() - 1.0) * y_std;
+            data.push({x: xval, y: yval, name: "Node "+String(i)});
+        }
+    }
+    randomize(30)
+
+/*
     svg.append("g")
         .attr("class", "x axis")
         .attr("transform", "translate(0," + height + ")")
@@ -121,65 +111,53 @@ body {
         .attr("dy", ".71em")
         .style("text-anchor", "end")
         .text("Points per game")
+*/
 
+    // Draw data points
     dots = svg.selectAll(".dot")
         .data(data)
         .enter().append("circle")
         .attr("class", "dot")
         .attr("r", 4.0)
-        .attr("cx", function(d) { return x(d.gp); })
-        .attr("cy", function(d) { return y(d.ppg); })
+        .attr("cx", function(d) { return (d.x); })
+        .attr("cy", function(d) { return (d.y); })
         .style("fill", 'red');
 
     label_centers = []
     dots.each(function(d, i) {
-        // console.log(i+" "+d.gp);
-        label_centers.push({x: d.gp, y: d.ppg, name: d.name});
+        label_centers.push({x: d.x, y: d.y, name: d.name});
     });
 
-    labels = svg.selectAll(".axis_label")
+    // Draw labels
+    labels = svg.selectAll(".label")
         .data(label_centers)
         .enter()
         .append("text")
         .attr('text-anchor', 'start')
         .text(function(d) { return d.name; })
-        .attr("x", function(d) { return x(d.x); })
-        .attr("y", function(d) { return y(d.y); })
+        .attr("x", function(d) { return (d.x); })
+        .attr("y", function(d) { return (d.y); })
         .attr("fill", "black");
 
+    // Draw links
     links = svg.selectAll(".link")
         .data(label_centers)
         .enter()
         .append("line")
-        .attr("x1", function(d) { return x(d.x); })
-        .attr("y1", function(d) { return y(d.y); })
-        .attr("x2", function(d) { return x(d.x); })
-        .attr("y2", function(d) { return y(d.y); })
+        .attr("x1", function(d) { return (d.x); })
+        .attr("y1", function(d) { return (d.y); })
+        .attr("x2", function(d) { return (d.x); })
+        .attr("y2", function(d) { return (d.y); })
         .attr("stroke-width", 0.5)
         .attr("stroke", "gray");
 
-    var chart = d3.anneal()
-    .nodes(label_centers);
-
-    function redrawLabels(label_centers) {
-        labels
-        .transition()
-        .duration(1000)
-        .attr("x", function(d) { return x(d.x); })
-        .attr("y", function(d) { return y(d.y); });
-
-        links
-        .transition()
-        .duration(1000)
-        .attr("x2",function(d) { return x(d.x); })
-        .attr("y2",function(d) { return y(d.y); });
-    }
-
+    var chart = d3.anneal().nodes(label_centers);
+    
     for (var i = 0; i < 5; i++) {
         console.log(i)
         chart.sweep()
-        redrawLabels()
     }
+    redrawLabels()
 
 
 </script>
