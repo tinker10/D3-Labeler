@@ -17,6 +17,10 @@ body {
   stroke: #000;
 }
 
+.circ {
+  stroke: #000;
+}
+
 .axis_label {
   font: 10px sans-serif;
 }
@@ -33,9 +37,10 @@ body {
 <script src="bullet.js"></script>
 <script>
 
-    var data = [];
+    var anchor = [],
+        label_centers = [];
 
-    var margin = {top: 20, right: 20, bottom: 30, left: 40},
+    var margin = {top: 20, right: 20, bottom: 30, left: 10},
         width = 960 - margin.left - margin.right,
         height = 500 - margin.top - margin.bottom,
         x_mean = width/2,
@@ -43,6 +48,8 @@ body {
         y_mean = height/2,
         y_std = height/4,
         link;
+
+    var offset = 4;
 /*
     var x = d3.scale.linear()
         .range([0, width]);
@@ -80,13 +87,19 @@ body {
         .duration(1000)
         .attr("x2",function(d) { return (d.x); })
         .attr("y2",function(d) { return (d.y); });
+
+        circ
+        .transition()
+        .duration(1000)
+        .attr("cx",function(d) { return (d.x); })
+        .attr("cy",function(d) { return (d.y - offset); });
     }
 
     function randomize(count) {
         for (var i = 0; i < count; i++) {
             var xval=x_mean + (2 * Math.random() - 1.0) * x_std;
             var yval=y_mean + (2 * Math.random() - 1.0) * y_std;
-            data.push({x: xval, y: yval, name: "Node "+String(i)});
+            anchor.push({x: xval, y: yval, name: "Node "+String(i)});
         }
     }
     randomize(30)
@@ -114,8 +127,8 @@ body {
 */
 
     // Draw data points
-    dots = svg.selectAll(".dot")
-        .data(data)
+    anchor_data = svg.selectAll(".dot")
+        .data(anchor)
         .enter().append("circle")
         .attr("class", "dot")
         .attr("r", 4.0)
@@ -123,8 +136,7 @@ body {
         .attr("cy", function(d) { return (d.y); })
         .style("fill", 'red');
 
-    label_centers = []
-    dots.each(function(d, i) {
+    anchor_data.each(function(d, i) {
         label_centers.push({x: d.x, y: d.y, name: d.name});
     });
 
@@ -133,11 +145,22 @@ body {
         .data(label_centers)
         .enter()
         .append("text")
-        .attr('text-anchor', 'start')
+        .attr('text-anchor', 'middle')
         .text(function(d) { return d.name; })
         .attr("x", function(d) { return (d.x); })
         .attr("y", function(d) { return (d.y); })
         .attr("fill", "black");
+
+    // Draw data points
+    circ = svg.selectAll(".circ")
+        .data(label_centers)
+        .enter().append("circle")
+        .attr("class", "circ")
+        .attr("r", 20.0)
+        .attr("cx", function(d) { return (d.x); })
+        .attr("cy", function(d) { return (d.y - offset); })
+        .style("fill", 'red')
+        .attr('opacity',0.0);
 
     // Draw links
     links = svg.selectAll(".link")
@@ -151,12 +174,13 @@ body {
         .attr("stroke-width", 0.5)
         .attr("stroke", "gray");
 
-    var chart = d3.anneal().nodes(label_centers);
+    var chart = d3.anneal()
+            .nodes(label_centers)
+            .anchor(anchor)
+            .width(width).height(height)
+            .sim_anneal(0.1);
     
-    for (var i = 0; i < 5; i++) {
-        console.log(i)
-        chart.sweep()
-    }
+
     redrawLabels()
 
 

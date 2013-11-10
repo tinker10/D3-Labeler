@@ -1,13 +1,18 @@
 (function() {
 
 d3.anneal = function() {
-  var a = 380,
-      b = 30,
-      lab = [],
+  var lab = [],
       anc = [],
       w = 1, // box width
       h = 1, // box width
       anneal = {};
+
+  var k_len = 0.3, // weight for leader line length penalty
+      k_inter = 1.0, // weight for leader line intersection penalty
+      k_lab2 = 30.0, // weight for label-label overlap
+      k_lab_anc = 30.0, // weight for label-anchor overlap
+      lab_rad = 20,
+      anc_rad = 4;
 
   energy = function(index) {
       var m = lab.length, 
@@ -15,13 +20,15 @@ d3.anneal = function() {
           dx = 0,
           dy = 0,
           dist = 0
-          overlap = true;
+          overlap = true,
+          amount = 0;
 
       // penalty for length of leader line
       dx = anc[index].x - lab[index].x;
       dy = anc[index].y - lab[index].y;
       dist = Math.sqrt(dx * dx + dy * dy);
-      // more stuff here
+      dist -= (lab_rad+anc_rad);
+      if (dist > 0) ener += dist * k_len;
 
       for (var i = 0; i < m; i++) {
         if (i != index) {
@@ -29,25 +36,31 @@ d3.anneal = function() {
           // penalty for overlap of leader lines
           overlap = intersect(anc[index].x, lab[index].x, anc[i].x, lab[i].x,
                           anc[index].y, lab[index].y, anc[i].y, lab[i].y);
-          // if (overlap) continue
+          if (overlap) ener += k_inter;
 
           // penalty for label-label overlap
           dx = lab[i].x - lab[index].x;
           dy = lab[i].y - lab[index].y;
           dist = Math.sqrt(dx * dx + dy * dy);
-          // if (dist < 50) ener += 500;
+          if (dist < 2 * lab_rad) {
+            amount = (2 * lab_rad - dist) / (2 * lab_rad);
+            ener += (amount * k_lab2);
+          }
         }
-        
+
         // penalty for label-anchor overlap
         dx = anc[i].x - lab[index].x;
         dy = anc[i].y - lab[index].y;
         dist = Math.sqrt(dx * dx + dy * dy);
-        // if (dist < 50) ener += 500;
+        if (dist < (lab_rad + anc_rad)) {
+          amount = ((lab_rad + anc_rad) - dist) / ((lab_rad + anc_rad));
+          ener += (amount * k_lab_anc);
+        }
       }
       return ener;
   };
 
-  mcmove = function() {
+  mcmove = function(temperature) {
 
       // random number between 0 and 
       var i = Math.floor((Math.random()*lab.length)); 
@@ -71,7 +84,7 @@ d3.anneal = function() {
       var new_energy = energy(i);
       var delta_energy = new_energy - old_energy;
 
-      if (Math.random() < Math.exp(-delta_energy / 1.0)) {
+      if (Math.random() < Math.exp(-delta_energy / temperature)) {
         // acceptance stuff here
       } else {
         lab[i].x = x_old;
@@ -99,9 +112,19 @@ d3.anneal = function() {
     return false;
 }
 
-  anneal.sweep = function() {
+  anneal.sim_anneal = function(speed) {
       var m = lab.length;
-      for (var i = 0; i < m; i++) { mcmove(); }
+          nsweeps = Math.floor(speed * 50000);
+          temperature = 1.0,
+          initialT = 1.0;
+
+      var increment = initialT / nsweeps;
+
+      for (var i = 0; i < nsweeps; i++) {
+        for (var j = 0; j < m; j++) { mcmove(temperature); }
+        temperature -= increment;
+        // console.log(temperature);
+      }
   };
 
   anneal.width = function(x) {
