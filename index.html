@@ -33,12 +33,15 @@ body {
 
 </style>
 <body>
+
+<button type="button" id="randomize1">Replace with 20</button>
+<button type="button" id="randomize2">Replace with 40</button>
+<button type="button" id="scatter_plot">Scatter plot</button>
+<button type="button" id="line_plot">Line plot</button>
+
 <script src="http://d3js.org/d3.v3.min.js"></script>
 <script src="anneal.js"></script>
 <script>
-
-    var anchor = [],
-        label_centers = [];
 
     var anchor = [],
         label_centers = [],
@@ -51,6 +54,8 @@ body {
         y_std = height/4,
         offset = 4;
 
+    var anchor_data, labels, circ, links;
+
     var svg = d3.select("body").append("svg")
         .attr("width", width + margin.left + margin.right)
         .attr("height", height + margin.top + margin.bottom)
@@ -58,7 +63,7 @@ body {
         .attr("transform", "translate(" + margin.left + "," + margin.top + ")");
 
     // Functions
-    function redrawLabels(label_centers) {
+    function redrawLabels() {
         labels
         .transition()
         .duration(1000)
@@ -79,68 +84,80 @@ body {
     }
 
     function randomize(count) {
+        anchor = [];
+        label_centers = [];
+
         for (var i = 0; i < count; i++) {
             var xval=x_mean + (2 * Math.random() - 1.0) * x_std;
             var yval=y_mean + (2 * Math.random() - 1.0) * y_std;
             anchor.push({x: xval, y: yval, name: "Node "+String(i)});
+            label_centers.push({x: xval, y: yval, name: "Node "+String(i)});
         }
-    }
-    randomize(30)
 
-    // Draw data points
-    anchor_data = svg.selectAll(".dot")
-        .data(anchor)
-        .enter().append("circle")
-        .attr("class", "dot")
-        .attr("r", 4.0)
-        .attr("cx", function(d) { return (d.x); })
-        .attr("cy", function(d) { return (d.y); })
-        .style("fill", 'red');
+        // Delete old stuff
+        svg.selectAll(".dot").data([]).exit().remove();
+        svg.selectAll(".label").data([]).exit().remove();
+        svg.selectAll(".circ").data([]).exit().remove();
+        svg.selectAll(".link").data([]).exit().remove();
 
-    anchor_data.each(function(d, i) {
-        label_centers.push({x: d.x, y: d.y, name: d.name});
-    });
+        // Draw anchors
+        anchor_data = svg.selectAll(".dot")
+            .data(anchor)
+            .enter().append("circle")
+            .attr("class", "dot")
+            .attr("r", 4.0)
+            .attr("cx", function(d) { return (d.x); })
+            .attr("cy", function(d) { return (d.y); })
+            .style("fill", 'red');
 
-    // Draw labels
-    labels = svg.selectAll(".label")
-        .data(label_centers)
-        .enter()
-        .append("text")
-        .attr('text-anchor', 'middle')
-        .text(function(d) { return d.name; })
-        .attr("x", function(d) { return (d.x); })
-        .attr("y", function(d) { return (d.y); })
-        .attr("fill", "black");
+        // Draw labels
+        labels = svg.selectAll(".label")
+            .data(label_centers)
+            .enter()
+            .append("text")
+            .attr("class", "label")
+            .attr('text-anchor', 'middle')
+            .text(function(d) { return d.name; })
+            .attr("x", function(d) { return (d.x); })
+            .attr("y", function(d) { return (d.y); })
+            .attr("fill", "black");
 
-    // Draw data points
-    circ = svg.selectAll(".circ")
-        .data(label_centers)
-        .enter().append("circle")
-        .attr("class", "circ")
-        .attr("r", 20.0)
-        .attr("cx", function(d) { return (d.x); })
-        .attr("cy", function(d) { return (d.y - offset); })
-        .style("fill", 'red')
-        .attr('opacity',0.0);
+        // Draw data points
+        circ = svg.selectAll(".circ")
+            .data(label_centers)
+            .enter().append("circle")
+            .attr("class", ".circ")
+            .attr("r", 20.0)
+            .attr("cx", function(d) { return (d.x); })
+            .attr("cy", function(d) { return (d.y - offset); })
+            .style("fill", 'red')
+            .attr('opacity',0.0);
 
-    // Draw links
-    links = svg.selectAll(".link")
-        .data(label_centers)
-        .enter()
-        .append("line")
-        .attr("x1", function(d) { return (d.x); })
-        .attr("y1", function(d) { return (d.y); })
-        .attr("x2", function(d) { return (d.x); })
-        .attr("y2", function(d) { return (d.y); })
-        .attr("stroke-width", 0.5)
-        .attr("stroke", "gray");
+        // Draw links
+        links = svg.selectAll(".link")
+            .data(label_centers)
+            .enter()
+            .append("line")
+            .attr("class", "link")
+            .attr("x1", function(d) { return (d.x); })
+            .attr("y1", function(d) { return (d.y); })
+            .attr("x2", function(d) { return (d.x); })
+            .attr("y2", function(d) { return (d.y); })
+            .attr("stroke-width", 0.5)
+            .attr("stroke", "gray");
 
-    var chart = d3.anneal()
+        var chart = d3.anneal()
             .nodes(label_centers)
             .anchor(anchor)
             .width(width).height(height)
             .sim_anneal(0.1);
+        
+        redrawLabels();
+    };
+
+    d3.select("#randomize1").on("click",function() {randomize(20)});
+    d3.select("#randomize2").on("click",function() {randomize(40)});
     
-    redrawLabels()
-    
+    randomize(20);
+
 </script>
