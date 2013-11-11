@@ -7,7 +7,10 @@ d3.anneal = function() {
       h = 1, // box width
       anneal = {};
 
-  var k_len = 0.3, // weight for leader line length penalty
+  var max_move = 5.0,
+      acc = 0;
+      rej = 0;
+      k_len = 0.3, // weight for leader line length penalty
       k_inter = 1.0, // weight for leader line intersection penalty
       k_lab2 = 30.0, // weight for label-label overlap
       k_lab_anc = 30.0, // weight for label-anchor overlap
@@ -28,7 +31,7 @@ d3.anneal = function() {
       dy = anc[index].y - lab[index].y;
       dist = Math.sqrt(dx * dx + dy * dy);
       dist -= (lab_rad+anc_rad);
-      if (dist > 0) ener += dist * k_len;
+      if (dist > 0) ener += dist * dist * k_len;
 
       for (var i = 0; i < m; i++) {
         if (i != index) {
@@ -72,8 +75,8 @@ d3.anneal = function() {
 
       var old_energy = energy(i);
 
-      lab[i].x += (Math.random() - 0.5) * 50;
-      lab[i].y += (Math.random() - 0.5) * 50;
+      lab[i].x += (Math.random() - 0.5) * max_move;
+      lab[i].y += (Math.random() - 0.5) * max_move;
 
       // hard wall boundaries
       if (lab[i].x > w) lab[i].x = x_old;
@@ -85,10 +88,11 @@ d3.anneal = function() {
       var delta_energy = new_energy - old_energy;
 
       if (Math.random() < Math.exp(-delta_energy / temperature)) {
-        // acceptance stuff here
+        acc += 1;
       } else {
         lab[i].x = x_old;
         lab[i].y = y_old;
+        rej += 1;
       }
 
   };
@@ -123,8 +127,9 @@ d3.anneal = function() {
       for (var i = 0; i < nsweeps; i++) {
         for (var j = 0; j < m; j++) { mcmove(temperature); }
         temperature -= increment;
-        // console.log(temperature);
       }
+
+      console.log(acc / (acc + rej));
   };
 
   anneal.width = function(x) {

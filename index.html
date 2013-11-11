@@ -150,11 +150,12 @@ body {
             .nodes(label_centers)
             .anchor(anchor)
             .width(width).height(height)
-            .sim_anneal(0.1);
+            .sim_anneal(0.2);
         
         redrawLabels();
     };
 
+    // Demonstration examples
     d3.select("#randomize1").on("click",function() {randomize(20)});
     d3.select("#randomize2").on("click",function() {randomize(40)});
     
