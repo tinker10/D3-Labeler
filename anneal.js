@@ -8,9 +8,10 @@ d3.anneal = function() {
       anneal = {};
 
   var max_move = 5.0,
+      max_angle = 0.5,
       acc = 0;
       rej = 0;
-      k_len = 0.3, // weight for leader line length penalty
+      k_len = 0.2, // weight for leader line length penalty
       k_inter = 1.0, // weight for leader line intersection penalty
       k_lab2 = 30.0, // weight for label-label overlap
       k_lab_anc = 30.0, // weight for label-anchor overlap
@@ -31,7 +32,7 @@ d3.anneal = function() {
       dy = anc[index].y - lab[index].y;
       dist = Math.sqrt(dx * dx + dy * dy);
       dist -= (lab_rad+anc_rad);
-      if (dist > 0) ener += dist * dist * k_len;
+      if (dist > 0) ener += dist * k_len;
 
       for (var i = 0; i < m; i++) {
         if (i != index) {
@@ -65,10 +66,8 @@ d3.anneal = function() {
 
   mcmove = function(temperature) {
 
-      // random number between 0 and 
-      var i = Math.floor((Math.random()*lab.length)); 
-
-      // console.log(lab[i].name)
+      // select a random label
+      var i = Math.floor(Math.random() * lab.length); 
 
       var x_old = lab[i].x;
       var y_old = lab[i].y;
@@ -97,6 +96,52 @@ d3.anneal = function() {
 
   };
 
+  mcrotate = function(temperature) {
+
+      // select a random label
+      var i = Math.floor(Math.random() * lab.length); 
+
+      var x_old = lab[i].x;
+      var y_old = lab[i].y;
+
+      var old_energy = energy(i);
+
+      var angle = (Math.random() - 0.5) * max_angle;
+
+      var s = Math.sin(angle);
+      var c = Math.cos(angle);
+
+      // translate label (relative to anchor at origin):
+      lab[i].x -= anc[i].x
+      lab[i].y -= anc[i].y
+
+      // rotate label
+      var x_new = lab[i].x * c - lab[i].y * s,
+          y_new = lab[i].x * s + lab[i].y * c;
+
+      // translate label back
+      lab[i].x = x_new + anc[i].x
+      lab[i].y = y_new + anc[i].y
+
+      // hard wall boundaries
+      if (lab[i].x > w) lab[i].x = x_old;
+      if (lab[i].x < 0) lab[i].x = x_old;
+      if (lab[i].y > h) lab[i].y = y_old;
+      if (lab[i].y < 0) lab[i].y = y_old;
+
+      var new_energy = energy(i);
+      var delta_energy = new_energy - old_energy;
+
+      if (Math.random() < Math.exp(-delta_energy / temperature)) {
+        acc += 1;
+      } else {
+        lab[i].x = x_old;
+        lab[i].y = y_old;
+        rej += 1;
+      }
+      
+  };
+
   intersect = function(x1, x2, x3, x4, y1, y2, y3, y4) {
     // from http://paulbourke.net/geometry/lineline2d/
 
@@ -114,7 +159,7 @@ d3.anneal = function() {
         return true;
     }
     return false;
-}
+  }
 
   anneal.sim_anneal = function(speed) {
       var m = lab.length;
@@ -125,11 +170,19 @@ d3.anneal = function() {
       var increment = initialT / nsweeps;
 
       for (var i = 0; i < nsweeps; i++) {
-        for (var j = 0; j < m; j++) { mcmove(temperature); }
+        for (var j = 0; j < m; j++) { 
+          if (Math.random() < 0.5) { mcmove(temperature); }
+          else { mcrotate(temperature); }
+        }
         temperature -= increment;
       }
 
       console.log(acc / (acc + rej));
+  };
+
+  anneal.test = function() {
+      console.log('hi');
+      mcrotate(1.0);
   };
 
   anneal.width = function(x) {

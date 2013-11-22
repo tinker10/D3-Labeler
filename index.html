@@ -34,10 +34,13 @@ body {
 </style>
 <body>
 
+<button type="button" id="randomize1">Start annealing</button>
+<!--
 <button type="button" id="randomize1">Replace with 20</button>
 <button type="button" id="randomize2">Replace with 40</button>
 <button type="button" id="scatter_plot">Scatter plot</button>
 <button type="button" id="line_plot">Line plot</button>
+-->
 
 <script src="http://d3js.org/d3.v3.min.js"></script>
 <script src="anneal.js"></script>
@@ -46,8 +49,8 @@ body {
     var anchor = [],
         label_centers = [],
         margin = {top: 20, right: 20, bottom: 30, left: 10},
-        width = 560 - margin.left - margin.right,
-        height = 500 - margin.top - margin.bottom,
+        width = 450 - margin.left - margin.right,
+        height = 300 - margin.top - margin.bottom,
         x_mean = width/2,
         x_std = width/4,
         y_mean = height/2,
@@ -88,10 +91,11 @@ body {
         label_centers = [];
 
         for (var i = 0; i < count; i++) {
-            var xval=x_mean + (2 * Math.random() - 1.0) * x_std;
-            var yval=y_mean + (2 * Math.random() - 1.0) * y_std;
+            var xval=x_mean + (2 * Math.random() - 1.0) * x_std * 1.5;
+            // var yval=y_mean + (2 * Math.random() - 1.0) * y_std * 1.5;
+            var yval=y_mean;
             anchor.push({x: xval, y: yval, name: "Node "+String(i)});
-            label_centers.push({x: xval, y: yval, name: "Node "+String(i)});
+            label_centers.push({x: xval, y: yval+1.0, name: "Node "+String(i)});
         }
 
         // Delete old stuff
@@ -146,19 +150,38 @@ body {
             .attr("stroke-width", 0.5)
             .attr("stroke", "gray");
 
-        var chart = d3.anneal()
-            .nodes(label_centers)
-            .anchor(anchor)
-            .width(width).height(height)
-            .sim_anneal(0.2);
+        // Implement simulated annealing
         
         redrawLabels();
     };
 
     // Demonstration examples
-    d3.select("#randomize1").on("click",function() {randomize(20)});
-    d3.select("#randomize2").on("click",function() {randomize(40)});
+    d3.select("#randomize1").on("click",function() {
+        randomize(40)
+        var sim_ann = d3.anneal()
+            .nodes(label_centers)
+            .anchor(anchor)
+            .width(width).height(height)
+            .sim_anneal(0.0001);
+        redrawLabels();
+        });
+
+    d3.select("#randomize2").on("click",function() {
+        randomize(40)
+        var sim_ann = d3.anneal()
+            .nodes(label_centers)
+            .anchor(anchor)
+            .width(width).height(height)
+            .sim_anneal(0.25);
+        redrawLabels();
+        });
     
-    randomize(20);
+    randomize(40);
+    var sim_ann = d3.anneal()
+            .nodes(label_centers)
+            .anchor(anchor)
+            .width(width).height(height)
+            .sim_anneal(0.0005);
+        redrawLabels();
 
 </script>
