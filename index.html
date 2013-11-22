@@ -21,6 +21,10 @@ body {
   stroke: #000;
 }
 
+.rect {
+  stroke: #000;
+}
+
 .axis_label {
   font: 10px sans-serif;
 }
@@ -48,6 +52,7 @@ body {
 
     var anchor = [],
         label_centers = [],
+        label_bounds = [],
         margin = {top: 20, right: 20, bottom: 30, left: 10},
         width = 450 - margin.left - margin.right,
         height = 300 - margin.top - margin.bottom,
@@ -57,7 +62,7 @@ body {
         y_std = height/4,
         offset = 4;
 
-    var anchor_data, labels, circ, links;
+    var anchor_data, labels, circ, links, bounds;
 
     var svg = d3.select("body").append("svg")
         .attr("width", width + margin.left + margin.right)
@@ -84,18 +89,26 @@ body {
         .duration(1000)
         .attr("cx",function(d) { return (d.x); })
         .attr("cy",function(d) { return (d.y - offset); });
+
+        bounds
+        .transition()
+        .duration(1000)
+        .attr("x",function(d) { return (d.x); })
+        .attr("y",function(d) { return (d.y - 10); });
+
     }
 
     function randomize(count) {
         anchor = [];
         label_centers = [];
+        label_bounds = [];
 
         for (var i = 0; i < count; i++) {
             var xval=x_mean + (2 * Math.random() - 1.0) * x_std * 1.5;
             // var yval=y_mean + (2 * Math.random() - 1.0) * y_std * 1.5;
             var yval=y_mean;
             anchor.push({x: xval, y: yval, name: "Node "+String(i)});
-            label_centers.push({x: xval, y: yval+1.0, name: "Node "+String(i)});
+            label_centers.push({x: xval, y: yval+1.0, name: "Node "+String(i), width: 0.0, height: 0.0});
         }
 
         // Delete old stuff
@@ -103,6 +116,7 @@ body {
         svg.selectAll(".label").data([]).exit().remove();
         svg.selectAll(".circ").data([]).exit().remove();
         svg.selectAll(".link").data([]).exit().remove();
+        svg.selectAll(".rect").data([]).exit().remove();
 
         // Draw anchors
         anchor_data = svg.selectAll(".dot")
@@ -120,11 +134,39 @@ body {
             .enter()
             .append("text")
             .attr("class", "label")
-            .attr('text-anchor', 'middle')
+            .attr('text-anchor', 'start')
             .text(function(d) { return d.name; })
             .attr("x", function(d) { return (d.x); })
             .attr("y", function(d) { return (d.y); })
             .attr("fill", "black");
+
+        // Size of each label
+        
+        labels.each(function() {
+            console.log(this.getBBox());
+            label_bounds.push(this.getBBox());
+        });
+
+
+
+        for (var i = 0; i < count; i++) {
+            label_centers[i].width = label_bounds[i].width;
+            label_centers[i].height = label_bounds[i].height;
+        }
+
+        // Draw label boundaries
+        bounds = svg.selectAll(".rect")
+            .data(label_centers)
+            .enter().append("rect")
+            .attr("class", ".rect")
+            .attr("x", function(d) { return (d.x); })
+            .attr("y", function(d) { return (d.y); })
+            .attr("width", function(d) { return (d.width); })
+            .attr("height", function(d) { return (d.height); })
+            .style("fill", 'white')
+            .style("fill-opacity", '0.0')
+            .style("stroke", "black")
+            .style("stroke-opacity", "1.0");
 
         // Draw data points
         circ = svg.selectAll(".circ")
@@ -181,7 +223,7 @@ body {
             .nodes(label_centers)
             .anchor(anchor)
             .width(width).height(height)
-            .sim_anneal(0.0005);
+            .sim_anneal(0.05);
         redrawLabels();
 
 </script>
