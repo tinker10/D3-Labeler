@@ -93,8 +93,8 @@ body {
         bounds
         .transition()
         .duration(1000)
-        .attr("x",function(d) { return (d.x); })
-        .attr("y",function(d) { return (d.y - 10); });
+        .attr("x",function(d) { return (d.x - 1); })
+        .attr("y",function(d) { return (d.y - d.height + 2); });
 
     }
 
@@ -147,10 +147,8 @@ body {
             label_bounds.push(this.getBBox());
         });
 
-
-
         for (var i = 0; i < count; i++) {
-            label_centers[i].width = label_bounds[i].width;
+            label_centers[i].width = label_bounds[i].width + 2;
             label_centers[i].height = label_bounds[i].height;
         }
 
@@ -160,7 +158,7 @@ body {
             .enter().append("rect")
             .attr("class", ".rect")
             .attr("x", function(d) { return (d.x); })
-            .attr("y", function(d) { return (d.y); })
+            .attr("y", function(d) { return (d.y - 10); })
             .attr("width", function(d) { return (d.width); })
             .attr("height", function(d) { return (d.height); })
             .style("fill", 'white')

@@ -34,6 +34,22 @@ d3.anneal = function() {
       dist -= (lab_rad+anc_rad);
       if (dist > 0) ener += dist * k_len;
 
+/*
+            x11 = d0.left,
+            y11 = d0.top,
+            x12 = d0.left + divs.eq(0).width(),
+            y12 = d0.top + divs.eq(0).height(),
+            x21 = d1.left,
+            y21 = d1.top,
+            x22 = d1.left + divs.eq(1).width(),
+            y22 = d1.top + divs.eq(1).height(),
+        
+            x_overlap = Math.max(0, Math.min(x12,x22) - Math.max(x11,x21))
+            y_overlap = Math.max(0, Math.min(y12,y22) - Math.max(y11,y21));
+*/
+
+
+
       for (var i = 0; i < m; i++) {
         if (i != index) {
 
@@ -43,14 +59,23 @@ d3.anneal = function() {
           if (overlap) ener += k_inter;
 
           // penalty for label-label overlap
-          dx = lab[i].x - lab[index].x;
-          dy = lab[i].y - lab[index].y;
-          dist = Math.sqrt(dx * dx + dy * dy);
-          if (dist < 2 * lab_rad) {
-            amount = (2 * lab_rad - dist) / (2 * lab_rad);
-            ener += (amount * k_lab2);
+          
+          var x11 = lab[i].x;
+          var y11 = lab[i].y;
+          var x12 = lab[i].x + lab[i].width;
+          var y12 = lab[i].y + lab[i].height;
+          var x21 = lab[index].x;
+          var y21 = lab[index].y;
+          var x22 = lab[index].x + lab[index].width;
+          var y22 = lab[index].y + lab[index].height;
+
+          var x_overlap = Math.max(0, Math.min(x12,x22) - Math.max(x11,x21))
+          var y_overlap = Math.max(0, Math.min(y12,y22) - Math.max(y11,y21));
+          var overlap = x_overlap * y_overlap;
+          ener += (overlap * k_lab2);
+
           }
-        }
+        
 
         // penalty for label-anchor overlap
         dx = anc[i].x - lab[index].x;
