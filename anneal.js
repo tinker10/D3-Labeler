@@ -5,6 +5,7 @@ d3.anneal = function() {
       anc = [],
       w = 1, // box width
       h = 1, // box width
+      r = 1, // anchor radius
       anneal = {};
 
   var max_move = 5.0,
@@ -31,7 +32,7 @@ d3.anneal = function() {
       dx = anc[index].x - lab[index].x;
       dy = anc[index].y - lab[index].y;
       dist = Math.sqrt(dx * dx + dy * dy);
-      dist -= (lab_rad+anc_rad);
+      // dist -= (lab_rad+anc_rad);
       if (dist > 0) ener += dist * k_len;
 
 /*
@@ -59,7 +60,6 @@ d3.anneal = function() {
           if (overlap) ener += k_inter;
 
           // penalty for label-label overlap
-          
           var x11 = lab[i].x;
           var y11 = lab[i].y;
           var x12 = lab[i].x + lab[i].width;
@@ -68,15 +68,34 @@ d3.anneal = function() {
           var y21 = lab[index].y;
           var x22 = lab[index].x + lab[index].width;
           var y22 = lab[index].y + lab[index].height;
-
-          var x_overlap = Math.max(0, Math.min(x12,x22) - Math.max(x11,x21))
+          var x_overlap = Math.max(0, Math.min(x12,x22) - Math.max(x11,x21));
           var y_overlap = Math.max(0, Math.min(y12,y22) - Math.max(y11,y21));
-          var overlap = x_overlap * y_overlap;
-          ener += (overlap * k_lab2);
-
+          var overlap_area = x_overlap * y_overlap;
+          ener += (overlap_area * k_lab2);
+          
           }
-        
 
+          // penalty for label-anchor overlap
+          var ax11 = anc[i].x - r;
+          var ay11 = anc[i].y - r;
+          var ax12 = anc[i].x + r;
+          var ay12 = anc[i].y + r;
+          // console.log(ax11, ay11, ax12, ay12)
+
+          var ax21 = lab[index].x;
+          var ay21 = lab[index].y - lab[index].height + 2.0;
+          var ax22 = lab[index].x + lab[index].width;
+          var ay22 = lab[index].y + 2.0;
+          // console.log(ax21, ay21, ax22, ay22)
+          var ax_overlap = Math.max(0, Math.min(ax12,ax22) - Math.max(ax11,ax21));
+          var ay_overlap = Math.max(0, Math.min(ay12,ay22) - Math.max(ay11,ay21));
+          // console.log(ax_overlap, ay_overlap);
+          var aoverlap_area = ax_overlap * ay_overlap;
+          // console.log(aoverlap_area)
+          ener += (aoverlap_area * k_lab_anc);
+
+
+/*
         // penalty for label-anchor overlap
         dx = anc[i].x - lab[index].x;
         dy = anc[i].y - lab[index].y;
@@ -85,12 +104,12 @@ d3.anneal = function() {
           amount = ((lab_rad + anc_rad) - dist) / ((lab_rad + anc_rad));
           ener += (amount * k_lab_anc);
         }
+        */
       }
       return ener;
   };
 
   mcmove = function(temperature) {
-
       // select a random label
       var i = Math.floor(Math.random() * lab.length); 
 
@@ -132,6 +151,7 @@ d3.anneal = function() {
       var old_energy = energy(i);
 
       var angle = (Math.random() - 0.5) * max_angle;
+      // angle = 0.0;
 
       var s = Math.sin(angle);
       var c = Math.cos(angle);
@@ -191,7 +211,7 @@ d3.anneal = function() {
           nsweeps = Math.floor(speed * 50000);
           temperature = 1.0,
           initialT = 1.0;
-
+      console.log(r)
       var increment = initialT / nsweeps;
 
       for (var i = 0; i < nsweeps; i++) {
@@ -206,8 +226,8 @@ d3.anneal = function() {
   };
 
   anneal.test = function() {
-      console.log('hi');
-      mcrotate(1.0);
+      console.log('testing!');
+      energy(0);
   };
 
   anneal.width = function(x) {
@@ -233,6 +253,12 @@ d3.anneal = function() {
   anneal.anchor = function(x) {
     if (!arguments.length) return anc;
     anc = x;
+    return anneal;
+  };
+
+  anneal.anchor_radius = function(x) {
+    if (!arguments.length) return r;
+    r = x;
     return anneal;
   };
 

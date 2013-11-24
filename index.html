@@ -14,7 +14,7 @@ body {
 }
 
 .dot {
-  stroke: #000;
+
 }
 
 .circ {
@@ -93,8 +93,8 @@ body {
         bounds
         .transition()
         .duration(1000)
-        .attr("x",function(d) { return (d.x - 1); })
-        .attr("y",function(d) { return (d.y - d.height + 2); });
+        .attr("x",function(d) { return (d.x); })
+        .attr("y",function(d) { return (d.y - 10); });
 
     }
 
@@ -105,10 +105,11 @@ body {
 
         for (var i = 0; i < count; i++) {
             var xval=x_mean + (2 * Math.random() - 1.0) * x_std * 1.5;
-            // var yval=y_mean + (2 * Math.random() - 1.0) * y_std * 1.5;
-            var yval=y_mean;
+            var yval=y_mean + (2 * Math.random() - 1.0) * y_std * 1.5;
+            // var xval=x_mean/2;
+            var yval=y_mean/2;
             anchor.push({x: xval, y: yval, name: "Node "+String(i)});
-            label_centers.push({x: xval, y: yval+1.0, name: "Node "+String(i), width: 0.0, height: 0.0});
+            label_centers.push({x: xval+0.0, y: yval+0.0, name: "Node "+String(i), width: 0.0, height: 0.0});
         }
 
         // Delete old stuff
@@ -126,7 +127,7 @@ body {
             .attr("r", 4.0)
             .attr("cx", function(d) { return (d.x); })
             .attr("cy", function(d) { return (d.y); })
-            .style("fill", 'red');
+            .style("fill", 'green');
 
         // Draw labels
         labels = svg.selectAll(".label")
@@ -143,20 +144,21 @@ body {
         // Size of each label
         
         labels.each(function() {
-            console.log(this.getBBox());
+            // console.log(this.getBBox());
             label_bounds.push(this.getBBox());
         });
 
         for (var i = 0; i < count; i++) {
-            label_centers[i].width = label_bounds[i].width + 2;
+            label_centers[i].width = label_bounds[i].width;
             label_centers[i].height = label_bounds[i].height;
         }
 
         // Draw label boundaries
         bounds = svg.selectAll(".rect")
             .data(label_centers)
-            .enter().append("rect")
-            .attr("class", ".rect")
+            .enter()
+            .append("rect")
+            .attr("class", "rect")
             .attr("x", function(d) { return (d.x); })
             .attr("y", function(d) { return (d.y - 10); })
             .attr("width", function(d) { return (d.width); })
@@ -179,7 +181,7 @@ body {
 
         // Draw links
         links = svg.selectAll(".link")
-            .data(label_centers)
+            .data(anchor)
             .enter()
             .append("line")
             .attr("class", "link")
@@ -201,27 +203,20 @@ body {
         var sim_ann = d3.anneal()
             .nodes(label_centers)
             .anchor(anchor)
-            .width(width).height(height)
-            .sim_anneal(0.0001);
-        redrawLabels();
-        });
-
-    d3.select("#randomize2").on("click",function() {
-        randomize(40)
-        var sim_ann = d3.anneal()
-            .nodes(label_centers)
-            .anchor(anchor)
+            .anchor_radius(4)
             .width(width).height(height)
             .sim_anneal(0.25);
         redrawLabels();
         });
     
-    randomize(40);
+    randomize(20);
+
     var sim_ann = d3.anneal()
             .nodes(label_centers)
             .anchor(anchor)
+            .anchor_radius(4)
             .width(width).height(height)
-            .sim_anneal(0.05);
+            .sim_anneal(0.25);
         redrawLabels();
 
 </script>
