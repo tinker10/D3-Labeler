@@ -61,13 +61,13 @@ d3.anneal = function() {
 
           // penalty for label-label overlap
           var x11 = lab[i].x;
-          var y11 = lab[i].y;
+          var y11 = lab[i].y - lab[i].height + 2.0;
           var x12 = lab[i].x + lab[i].width;
-          var y12 = lab[i].y + lab[i].height;
+          var y12 = lab[i].y + 2.0;
           var x21 = lab[index].x;
-          var y21 = lab[index].y;
+          var y21 = lab[index].y - lab[index].height + 2.0;
           var x22 = lab[index].x + lab[index].width;
-          var y22 = lab[index].y + lab[index].height;
+          var y22 = lab[index].y + 2.0;
           var x_overlap = Math.max(0, Math.min(x12,x22) - Math.max(x11,x21));
           var y_overlap = Math.max(0, Math.min(y12,y22) - Math.max(y11,y21));
           var overlap_area = x_overlap * y_overlap;
