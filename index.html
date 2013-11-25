@@ -107,9 +107,9 @@ body {
             var xval=x_mean + (2 * Math.random() - 1.0) * x_std * 1.5;
             var yval=y_mean + (2 * Math.random() - 1.0) * y_std * 1.5;
             // var xval=x_mean/2;
-            var yval=y_mean/2;
+            // var yval=y_mean/2;
             anchor.push({x: xval, y: yval, name: "Node "+String(i)});
-            label_centers.push({x: xval+0.0, y: yval+0.0, name: "Node "+String(i), width: 0.0, height: 0.0});
+            label_centers.push({x: xval-0.0, y: yval+0.0, name: "Node "+String(i), width: 0.0, height: 0.0});
         }
 
         // Delete old stuff
@@ -209,7 +209,7 @@ body {
         redrawLabels();
         });
     
-    randomize(20);
+    randomize(10);
 
     var sim_ann = d3.anneal()
             .nodes(label_centers)

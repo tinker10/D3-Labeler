@@ -15,9 +15,7 @@ d3.anneal = function() {
       k_len = 0.2, // weight for leader line length penalty
       k_inter = 1.0, // weight for leader line intersection penalty
       k_lab2 = 30.0, // weight for label-label overlap
-      k_lab_anc = 30.0, // weight for label-anchor overlap
-      lab_rad = 20,
-      anc_rad = 4;
+      k_lab_anc = 30.0; // weight for label-anchor overlap
 
   energy = function(index) {
       var m = lab.length, 
@@ -26,7 +24,8 @@ d3.anneal = function() {
           dy = 0,
           dist = 0
           overlap = true,
-          amount = 0;
+          amount = 0
+          theta = 0;
 
       // penalty for length of leader line
       dx = anc[index].x - lab[index].x;
@@ -35,21 +34,27 @@ d3.anneal = function() {
       // dist -= (lab_rad+anc_rad);
       if (dist > 0) ener += dist * k_len;
 
-/*
-            x11 = d0.left,
-            y11 = d0.top,
-            x12 = d0.left + divs.eq(0).width(),
-            y12 = d0.top + divs.eq(0).height(),
-            x21 = d1.left,
-            y21 = d1.top,
-            x22 = d1.left + divs.eq(1).width(),
-            y22 = d1.top + divs.eq(1).height(),
-        
-            x_overlap = Math.max(0, Math.min(x12,x22) - Math.max(x11,x21))
-            y_overlap = Math.max(0, Math.min(y12,y22) - Math.max(y11,y21));
-*/
+      // label orientation bias
+      dx = lab[index].x - anc[index].x;
+      dy = anc[index].y - lab[index].y;
+      dist = Math.sqrt(dx * dx + dy * dy);
+      dx /= dist;
+      dy /= dist;
 
+      if (dx > 0 && dy > 0) { ener += 0.0; }
+      else if (dx < 0 && dy > 0) { ener += 1 * 5.0; }
+      else if (dx < 0 && dy < 0) { ener += 2 * 5.0; }
+      else { ener += 3 * 5.0; }
 
+      /*
+      if (dx > 0 && dy > 0) {
+        theta = Math.acos(dx) * 180.0 / 3.14159;
+        ener += Math.pow(theta - 45.0, 2);
+      } else if (dx > 0 && dy < 0) {
+        theta = Math.acos(dx) * 180.0 / 3.14159;
+        ener += Math.pow(theta - 45.0, 2);
+      }
+      */
 
       for (var i = 0; i < m; i++) {
         if (i != index) {
@@ -94,30 +99,23 @@ d3.anneal = function() {
           // console.log(aoverlap_area)
           ener += (aoverlap_area * k_lab_anc);
 
-
-/*
-        // penalty for label-anchor overlap
-        dx = anc[i].x - lab[index].x;
-        dy = anc[i].y - lab[index].y;
-        dist = Math.sqrt(dx * dx + dy * dy);
-        if (dist < (lab_rad + anc_rad)) {
-          amount = ((lab_rad + anc_rad) - dist) / ((lab_rad + anc_rad));
-          ener += (amount * k_lab_anc);
-        }
-        */
       }
       return ener;
   };
 
   mcmove = function(temperature) {
+
       // select a random label
       var i = Math.floor(Math.random() * lab.length); 
 
+      // save old coordinates
       var x_old = lab[i].x;
       var y_old = lab[i].y;
 
+      // old energy
       var old_energy = energy(i);
 
+      // random translation
       lab[i].x += (Math.random() - 0.5) * max_move;
       lab[i].y += (Math.random() - 0.5) * max_move;
 
@@ -127,12 +125,16 @@ d3.anneal = function() {
       if (lab[i].y > h) lab[i].y = y_old;
       if (lab[i].y < 0) lab[i].y = y_old;
 
+      // new energy
       var new_energy = energy(i);
+
+      // delta E
       var delta_energy = new_energy - old_energy;
 
       if (Math.random() < Math.exp(-delta_energy / temperature)) {
         acc += 1;
       } else {
+        // move back to old coordinates
         lab[i].x = x_old;
         lab[i].y = y_old;
         rej += 1;
@@ -145,13 +147,15 @@ d3.anneal = function() {
       // select a random label
       var i = Math.floor(Math.random() * lab.length); 
 
+      // save old coordinates
       var x_old = lab[i].x;
       var y_old = lab[i].y;
 
+      // old energy
       var old_energy = energy(i);
 
+      // random angle
       var angle = (Math.random() - 0.5) * max_angle;
-      // angle = 0.0;
 
       var s = Math.sin(angle);
       var c = Math.cos(angle);
@@ -174,12 +178,16 @@ d3.anneal = function() {
       if (lab[i].y > h) lab[i].y = y_old;
       if (lab[i].y < 0) lab[i].y = y_old;
 
+      // new energy
       var new_energy = energy(i);
+
+      // delta E
       var delta_energy = new_energy - old_energy;
 
       if (Math.random() < Math.exp(-delta_energy / temperature)) {
         acc += 1;
       } else {
+        // move back to old coordinates
         lab[i].x = x_old;
         lab[i].y = y_old;
         rej += 1;
@@ -211,7 +219,7 @@ d3.anneal = function() {
           nsweeps = Math.floor(speed * 50000);
           temperature = 1.0,
           initialT = 1.0;
-      console.log(r)
+
       var increment = initialT / nsweeps;
 
       for (var i = 0; i < nsweeps; i++) {
@@ -233,14 +241,12 @@ d3.anneal = function() {
   anneal.width = function(x) {
     if (!arguments.length) return w;
     w = x;
-    // console.log("width" + w);
     return anneal;
   };
 
   anneal.height = function(x) {
     if (!arguments.length) return h;
     h = x;    
-    // console.log("width" + h);
     return anneal;
   };
 
