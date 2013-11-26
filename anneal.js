@@ -12,10 +12,11 @@ d3.anneal = function() {
       max_angle = 0.5,
       acc = 0;
       rej = 0;
-      k_len = 0.2, // weight for leader line length penalty
-      k_inter = 1.0, // weight for leader line intersection penalty
-      k_lab2 = 30.0, // weight for label-label overlap
-      k_lab_anc = 30.0; // weight for label-anchor overlap
+      w_len = 0.2, // weight for leader line length penalty
+      w_inter = 1.0, // weight for leader line intersection penalty
+      w_lab2 = 30.0, // weight for label-label overlap
+      w_lab_anc = 30.0; // weight for label-anchor overlap
+      w_orient = 5.0; // weight for orientation bias
 
   energy = function(index) {
       var m = lab.length, 
@@ -32,7 +33,7 @@ d3.anneal = function() {
       dy = anc[index].y - lab[index].y;
       dist = Math.sqrt(dx * dx + dy * dy);
       // dist -= (lab_rad+anc_rad);
-      if (dist > 0) ener += dist * k_len;
+      if (dist > 0) ener += dist * w_len;
 
       // label orientation bias
       dx = lab[index].x - anc[index].x;
@@ -41,10 +42,10 @@ d3.anneal = function() {
       dx /= dist;
       dy /= dist;
 
-      if (dx > 0 && dy > 0) { ener += 0.0; }
-      else if (dx < 0 && dy > 0) { ener += 1 * 5.0; }
-      else if (dx < 0 && dy < 0) { ener += 2 * 5.0; }
-      else { ener += 3 * 5.0; }
+      if (dx > 0 && dy > 0) { ener += 0 * w_orient; }
+      else if (dx < 0 && dy > 0) { ener += 1 * w_orient; }
+      else if (dx < 0 && dy < 0) { ener += 2 * w_orient; }
+      else { ener += 3 * w_orient; }
 
       /*
       if (dx > 0 && dy > 0) {
@@ -62,7 +63,7 @@ d3.anneal = function() {
           // penalty for overlap of leader lines
           overlap = intersect(anc[index].x, lab[index].x, anc[i].x, lab[i].x,
                           anc[index].y, lab[index].y, anc[i].y, lab[i].y);
-          if (overlap) ener += k_inter;
+          if (overlap) ener += w_inter;
 
           // penalty for label-label overlap
           var x11 = lab[i].x;
@@ -76,7 +77,7 @@ d3.anneal = function() {
           var x_overlap = Math.max(0, Math.min(x12,x22) - Math.max(x11,x21));
           var y_overlap = Math.max(0, Math.min(y12,y22) - Math.max(y11,y21));
           var overlap_area = x_overlap * y_overlap;
-          ener += (overlap_area * k_lab2);
+          ener += (overlap_area * w_lab2);
           
           }
 
@@ -97,7 +98,7 @@ d3.anneal = function() {
           // console.log(ax_overlap, ay_overlap);
           var aoverlap_area = ax_overlap * ay_overlap;
           // console.log(aoverlap_area)
-          ener += (aoverlap_area * k_lab_anc);
+          ener += (aoverlap_area * w_lab_anc);
 
       }
       return ener;
