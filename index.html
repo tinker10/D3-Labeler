@@ -202,10 +202,9 @@ body {
         randomize(40)
         var sim_ann = d3.anneal()
             .nodes(label_centers)
-            .anchor(anchor)
-            .anchor_radius(4)
+            .anchor(anchor).anchor_radius(4)
             .width(width).height(height)
-            .sim_anneal(0.25);
+            .sim_anneal(10000);
         redrawLabels();
         });
     
@@ -216,7 +215,7 @@ body {
             .anchor(anchor)
             .anchor_radius(4)
             .width(width).height(height)
-            .sim_anneal(0.25);
+            .sim_anneal(10000);
         redrawLabels();
 
 </script>

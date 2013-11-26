@@ -103,7 +103,7 @@ d3.anneal = function() {
       return ener;
   };
 
-  mcmove = function(temperature) {
+  mcmove = function(currT) {
 
       // select a random label
       var i = Math.floor(Math.random() * lab.length); 
@@ -131,7 +131,7 @@ d3.anneal = function() {
       // delta E
       var delta_energy = new_energy - old_energy;
 
-      if (Math.random() < Math.exp(-delta_energy / temperature)) {
+      if (Math.random() < Math.exp(-delta_energy / currT)) {
         acc += 1;
       } else {
         // move back to old coordinates
@@ -142,7 +142,7 @@ d3.anneal = function() {
 
   };
 
-  mcrotate = function(temperature) {
+  mcrotate = function(currT) {
 
       // select a random label
       var i = Math.floor(Math.random() * lab.length); 
@@ -184,7 +184,7 @@ d3.anneal = function() {
       // delta E
       var delta_energy = new_energy - old_energy;
 
-      if (Math.random() < Math.exp(-delta_energy / temperature)) {
+      if (Math.random() < Math.exp(-delta_energy / currT)) {
         acc += 1;
       } else {
         // move back to old coordinates
@@ -214,27 +214,28 @@ d3.anneal = function() {
     return false;
   }
 
-  anneal.sim_anneal = function(speed) {
-      var m = lab.length;
-          nsweeps = Math.floor(speed * 50000);
-          temperature = 1.0,
-          initialT = 1.0;
+  cooling_schedule = function(currT, initialT, nsweeps) {
+    // linear cooling
+    return (currT - (initialT / nsweeps));
+  }
 
-      var increment = initialT / nsweeps;
+  anneal.sim_anneal = function(nsweeps) {
+      var m = lab.length,
+          currT = 1.0,
+          initialT = 1.0;
 
       for (var i = 0; i < nsweeps; i++) {
         for (var j = 0; j < m; j++) { 
-          if (Math.random() < 0.5) { mcmove(temperature); }
-          else { mcrotate(temperature); }
+          if (Math.random() < 0.5) { mcmove(currT); }
+          else { mcrotate(currT); }
         }
-        temperature -= increment;
+        currT = cooling_schedule(currT, initialT, nsweeps);
       }
-
       console.log(acc / (acc + rej));
   };
 
   anneal.test = function() {
-      console.log('testing!');
+      console.log('Testing mode.');
       energy(0);
   };
 
