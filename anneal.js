@@ -19,6 +19,8 @@ d3.anneal = function() {
       w_orient = 5.0; // weight for orientation bias
 
   energy = function(index) {
+  // energy function, tailored for label placement
+
       var m = lab.length, 
           ener = 0,
           dx = 0,
@@ -105,6 +107,7 @@ d3.anneal = function() {
   };
 
   mcmove = function(currT) {
+  // Monte Carlo translation move
 
       // select a random label
       var i = Math.floor(Math.random() * lab.length); 
@@ -144,6 +147,7 @@ d3.anneal = function() {
   };
 
   mcrotate = function(currT) {
+  // Monte Carlo rotation move
 
       // select a random label
       var i = Math.floor(Math.random() * lab.length); 
@@ -197,7 +201,8 @@ d3.anneal = function() {
   };
 
   intersect = function(x1, x2, x3, x4, y1, y2, y3, y4) {
-    // from http://paulbourke.net/geometry/lineline2d/
+  // returns true if two lines intersect, else false
+  // from http://paulbourke.net/geometry/lineline2d/
 
     var mua, mub;
     var denom, numera, numerb;
@@ -216,11 +221,12 @@ d3.anneal = function() {
   }
 
   cooling_schedule = function(currT, initialT, nsweeps) {
-    // linear cooling
+  // linear cooling
     return (currT - (initialT / nsweeps));
   }
 
   anneal.sim_anneal = function(nsweeps) {
+  // main simulated annealing function
       var m = lab.length,
           currT = 1.0,
           initialT = 1.0;
@@ -236,35 +242,41 @@ d3.anneal = function() {
   };
 
   anneal.test = function() {
+  // testing mode
       console.log('Testing mode.');
       energy(0);
   };
 
   anneal.width = function(x) {
+  // users insert graph width
     if (!arguments.length) return w;
     w = x;
     return anneal;
   };
 
   anneal.height = function(x) {
+  // users insert graph height
     if (!arguments.length) return h;
     h = x;    
     return anneal;
   };
 
   anneal.nodes = function(x) {
+  // users insert label positions
     if (!arguments.length) return lab;
     lab = x;
     return anneal;
   };
 
   anneal.anchor = function(x) {
+  // users insert anchor positions
     if (!arguments.length) return anc;
     anc = x;
     return anneal;
   };
 
   anneal.anchor_radius = function(x) {
+  // users insert radius of achor points
     if (!arguments.length) return r;
     r = x;
     return anneal;
