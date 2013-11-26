@@ -23,24 +23,18 @@ d3.anneal = function() {
 
       var m = lab.length, 
           ener = 0,
-          dx = 0,
-          dy = 0,
-          dist = 0
+          dx = lab[index].x - anc[index].x,
+          dy = anc[index].y - lab[index].y,
+          dist = Math.sqrt(dx * dx + dy * dy),
           overlap = true,
           amount = 0
           theta = 0;
 
       // penalty for length of leader line
-      dx = anc[index].x - lab[index].x;
-      dy = anc[index].y - lab[index].y;
-      dist = Math.sqrt(dx * dx + dy * dy);
       // dist -= (lab_rad+anc_rad);
       if (dist > 0) ener += dist * w_len;
 
       // label orientation bias
-      dx = lab[index].x - anc[index].x;
-      dy = anc[index].y - lab[index].y;
-      dist = Math.sqrt(dx * dx + dy * dy);
       dx /= dist;
       dy /= dist;
 
@@ -49,58 +43,40 @@ d3.anneal = function() {
       else if (dx < 0 && dy < 0) { ener += 2 * w_orient; }
       else { ener += 3 * w_orient; }
 
-      /*
-      if (dx > 0 && dy > 0) {
-        theta = Math.acos(dx) * 180.0 / 3.14159;
-        ener += Math.pow(theta - 45.0, 2);
-      } else if (dx > 0 && dy < 0) {
-        theta = Math.acos(dx) * 180.0 / 3.14159;
-        ener += Math.pow(theta - 45.0, 2);
-      }
-      */
+      var x21 = lab[index].x,
+          y21 = lab[index].y - lab[index].height + 2.0,
+          x22 = lab[index].x + lab[index].width,
+          y22 = lab[index].y + 2.0;
+      var x11, x12, y11, y12, x_overlap, y_overlap, overlap_area;
 
       for (var i = 0; i < m; i++) {
         if (i != index) {
 
-          // penalty for overlap of leader lines
+          // penalty for intersection of leader lines
           overlap = intersect(anc[index].x, lab[index].x, anc[i].x, lab[i].x,
                           anc[index].y, lab[index].y, anc[i].y, lab[i].y);
           if (overlap) ener += w_inter;
 
           // penalty for label-label overlap
-          var x11 = lab[i].x;
-          var y11 = lab[i].y - lab[i].height + 2.0;
-          var x12 = lab[i].x + lab[i].width;
-          var y12 = lab[i].y + 2.0;
-          var x21 = lab[index].x;
-          var y21 = lab[index].y - lab[index].height + 2.0;
-          var x22 = lab[index].x + lab[index].width;
-          var y22 = lab[index].y + 2.0;
-          var x_overlap = Math.max(0, Math.min(x12,x22) - Math.max(x11,x21));
-          var y_overlap = Math.max(0, Math.min(y12,y22) - Math.max(y11,y21));
-          var overlap_area = x_overlap * y_overlap;
+          x11 = lab[i].x;
+          y11 = lab[i].y - lab[i].height + 2.0;
+          x12 = lab[i].x + lab[i].width;
+          y12 = lab[i].y + 2.0;
+          x_overlap = Math.max(0, Math.min(x12,x22) - Math.max(x11,x21));
+          y_overlap = Math.max(0, Math.min(y12,y22) - Math.max(y11,y21));
+          overlap_area = x_overlap * y_overlap;
           ener += (overlap_area * w_lab2);
-          
           }
 
           // penalty for label-anchor overlap
-          var ax11 = anc[i].x - r;
-          var ay11 = anc[i].y - r;
-          var ax12 = anc[i].x + r;
-          var ay12 = anc[i].y + r;
-          // console.log(ax11, ay11, ax12, ay12)
-
-          var ax21 = lab[index].x;
-          var ay21 = lab[index].y - lab[index].height + 2.0;
-          var ax22 = lab[index].x + lab[index].width;
-          var ay22 = lab[index].y + 2.0;
-          // console.log(ax21, ay21, ax22, ay22)
-          var ax_overlap = Math.max(0, Math.min(ax12,ax22) - Math.max(ax11,ax21));
-          var ay_overlap = Math.max(0, Math.min(ay12,ay22) - Math.max(ay11,ay21));
-          // console.log(ax_overlap, ay_overlap);
-          var aoverlap_area = ax_overlap * ay_overlap;
-          // console.log(aoverlap_area)
-          ener += (aoverlap_area * w_lab_anc);
+          x11 = anc[i].x - r;
+          y11 = anc[i].y - r;
+          x12 = anc[i].x + r;
+          y12 = anc[i].y + r;
+          x_overlap = Math.max(0, Math.min(x12,x22) - Math.max(x11,x21));
+          y_overlap = Math.max(0, Math.min(y12,y22) - Math.max(y11,y21));
+          overlap_area = x_overlap * y_overlap;
+          ener += (overlap_area * w_lab_anc);
 
       }
       return ener;
