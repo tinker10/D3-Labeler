@@ -54,8 +54,8 @@ body {
         label_centers = [],
         label_bounds = [],
         margin = {top: 20, right: 20, bottom: 30, left: 10},
-        width = 450 - margin.left - margin.right,
-        height = 300 - margin.top - margin.bottom,
+        width = 400 - margin.left - margin.right,
+        height = 400 - margin.top - margin.bottom,
         x_mean = width/2,
         x_std = width/4,
         y_mean = height/2,
@@ -69,6 +69,18 @@ body {
         .attr("height", height + margin.top + margin.bottom)
         .append("g")
         .attr("transform", "translate(" + margin.left + "," + margin.top + ")");
+
+
+
+    var plot_boundary = svg.append("rect")
+            .attr("x", -10.0)
+            .attr("y", -10.0)
+            .attr("width", width+35)
+            .attr("height", height+15)
+            .style("fill-opacity", '0.0')
+            .style("stroke", "black")
+            .style("stroke-opacity", "1.0");
+
 
     // Functions
     function redrawLabels() {
@@ -104,8 +116,12 @@ body {
         label_bounds = [];
 
         for (var i = 0; i < count; i++) {
-            var xval=x_mean + (2 * Math.random() - 1.0) * x_std * 1.5;
-            var yval=y_mean + (2 * Math.random() - 1.0) * y_std * 1.5;
+            // var xval=x_mean + (2 * Math.random() - 1.0) * x_std * 1.5;
+            // var yval=y_mean + (2 * Math.random() - 1.0) * y_std * 1.5;
+
+            var xval=Math.random() * (width - 25);
+            var yval=Math.random() * (2.5 + height - 5);
+            
             // var xval=x_mean/2;
             // var yval=y_mean/2;
             anchor.push({x: xval, y: yval, name: "Node "+String(i)});
@@ -149,7 +165,7 @@ body {
         });
 
         for (var i = 0; i < count; i++) {
-            label_centers[i].width = label_bounds[i].width;
+            label_centers[i].width = label_bounds[i].width+4;
             label_centers[i].height = label_bounds[i].height;
         }
 
@@ -208,7 +224,11 @@ body {
         redrawLabels();
         });
     
-    randomize(10);
+    randomize(150);
+
+    var begin= new Date().getTime();
+
+    // Milliseconds();
 
     var sim_ann = d3.anneal()
             .nodes(label_centers)
@@ -217,5 +237,9 @@ body {
             .width(width).height(height)
             .sim_anneal(10000);
         redrawLabels();
+
+    var end = new Date().getTime();
+
+    console.log(end - begin);
 
 </script>

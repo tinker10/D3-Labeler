@@ -12,11 +12,13 @@ d3.anneal = function() {
       max_angle = 0.5,
       acc = 0;
       rej = 0;
-      w_len = 0.2, // weight for leader line length penalty
-      w_inter = 1.0, // weight for leader line intersection penalty
-      w_lab2 = 30.0, // weight for label-label overlap
-      w_lab_anc = 30.0; // weight for label-anchor overlap
-      w_orient = 5.0; // weight for orientation bias
+
+  // weights
+  var w_len = 0.2, // leader line length 
+      w_inter = 1.0, // leader line intersection
+      w_lab2 = 30.0, // label-label overlap
+      w_lab_anc = 30.0; // label-anchor overlap
+      w_orient = 3.0; // orientation bias
 
   energy = function(index) {
   // energy function, tailored for label placement
@@ -37,7 +39,6 @@ d3.anneal = function() {
       // label orientation bias
       dx /= dist;
       dy /= dist;
-
       if (dx > 0 && dy > 0) { ener += 0 * w_orient; }
       else if (dx < 0 && dy > 0) { ener += 1 * w_orient; }
       else if (dx < 0 && dy < 0) { ener += 2 * w_orient; }
