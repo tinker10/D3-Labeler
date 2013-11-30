@@ -222,13 +222,14 @@ body {
         redrawLabels();
         });
 
-    var avg_time = 0.0;
+    var avg_time = 0;
 
-    for (var i = 0; i < 100; i++) {
+    var num_trials = 1;
+    for (var i = 0; i < num_trials; i++) {
     
-    randomize(25);
+    randomize(150);
 
-    var begin= new Date().getTime();
+    // var begin= new Date().getTime();
 
     // Milliseconds();
 
@@ -240,15 +241,15 @@ body {
             .sim_anneal(1000);
         redrawLabels();
 
-    var end = new Date().getTime();
+    // var end = new Date().getTime();
 
-    console.log(i, end - begin);
-    avg_time += ((end - begin) / 1000.0);
+    // console.log(i, end - begin);
+    avg_time += sim_ann;
+    console.log(i, sim_ann);
 
     }
-
-    console.log("Average");
-    console.log(avg_time / 100.0);
+    // console.log("Average");
+    console.log(avg_time / num_trials);
 
 
 </script>

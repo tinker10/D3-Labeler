@@ -202,6 +202,54 @@ d3.anneal = function() {
     return (currT - (initialT / nsweeps));
   }
 
+  counter = function() {
+
+      var m = lab.length;
+
+      var tot_inter = 0,
+          ll_overlap = 0,
+          la_overlap = 0;
+
+      // for (var i = 0; i < (m - 1); i++) {
+        // for (var j = i + 1; j < m; j++) {
+      for (var i = 0; i < m; i++) {
+        for (var j = i ; j < m; j++) {
+
+          // intersection
+          tot_inter += overlap = intersect(anc[j].x, lab[j].x, anc[i].x, lab[i].x,
+                          anc[j].y, lab[j].y, anc[i].y, lab[i].y);
+
+          var x21 = lab[i].x,
+          y21 = lab[i].y - lab[i].height + 2.0,
+          x22 = lab[i].x + lab[i].width,
+          y22 = lab[i].y + 2.0;
+          var x11, x12, y11, y12, x_overlap, y_overlap, overlap_area;
+
+          // label-label overlap
+          x11 = lab[j].x;
+          y11 = lab[j].y - lab[j].height + 2.0;
+          x12 = lab[j].x + lab[j].width;
+          y12 = lab[j].y + 2.0;
+          x_overlap = Math.max(0, Math.min(x12,x22) - Math.max(x11,x21));
+          y_overlap = Math.max(0, Math.min(y12,y22) - Math.max(y11,y21));
+          overlap_area = x_overlap * y_overlap;
+          if (overlap_area > 0.0) ll_overlap += 1;
+
+          // label-anchor overlap
+          x11 = anc[j].x - r;
+          y11 = anc[j].y - r;
+          x12 = anc[j].x + r;
+          y12 = anc[j].y + r;
+          x_overlap = Math.max(0, Math.min(x12,x22) - Math.max(x11,x21));
+          y_overlap = Math.max(0, Math.min(y12,y22) - Math.max(y11,y21));
+          overlap_area = x_overlap * y_overlap;
+          if (overlap_area > 0.0) la_overlap += 1;
+        }
+      }
+      // console.log(tot_inter, ll_overlap, la_overlap)
+      return la_overlap
+  };
+
   anneal.sim_anneal = function(nsweeps) {
   // main simulated annealing function
       var m = lab.length,
@@ -215,7 +263,10 @@ d3.anneal = function() {
         }
         currT = cooling_schedule(currT, initialT, nsweeps);
       }
+      var c = counter();
+      // console.log(c)
       // console.log(acc / (acc + rej));
+      return c;
   };
 
   anneal.test = function() {
