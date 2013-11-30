@@ -54,7 +54,7 @@ body {
         label_centers = [],
         label_bounds = [],
         margin = {top: 20, right: 20, bottom: 30, left: 10},
-        width = 400 - margin.left - margin.right,
+        width = 430 - margin.left - margin.right,
         height = 400 - margin.top - margin.bottom,
         x_mean = width/2,
         x_std = width/4,
@@ -70,16 +70,14 @@ body {
         .append("g")
         .attr("transform", "translate(" + margin.left + "," + margin.top + ")");
 
-
-
     var plot_boundary = svg.append("rect")
-            .attr("x", -10.0)
-            .attr("y", -10.0)
-            .attr("width", width+35)
-            .attr("height", height+15)
+            .attr("x", 0.0)
+            .attr("y", 0.0)
+            .attr("width", width)
+            .attr("height", height)
             .style("fill-opacity", '0.0')
             .style("stroke", "black")
-            .style("stroke-opacity", "1.0");
+            .style("stroke-opacity", "0.0");
 
 
     // Functions
@@ -119,13 +117,13 @@ body {
             // var xval=x_mean + (2 * Math.random() - 1.0) * x_std * 1.5;
             // var yval=y_mean + (2 * Math.random() - 1.0) * y_std * 1.5;
 
-            var xval=Math.random() * (width - 25);
+            var xval=Math.random() * (5 + width - 25);
             var yval=Math.random() * (2.5 + height - 5);
             
             // var xval=x_mean/2;
             // var yval=y_mean/2;
             anchor.push({x: xval, y: yval, name: "Node "+String(i)});
-            label_centers.push({x: xval-0.0, y: yval+0.0, name: "Node "+String(i), width: 0.0, height: 0.0});
+            label_centers.push({x: xval, y: yval, name: "Node "+String(i), width: 0.0, height: 0.0});
         }
 
         // Delete old stuff
@@ -165,7 +163,7 @@ body {
         });
 
         for (var i = 0; i < count; i++) {
-            label_centers[i].width = label_bounds[i].width+4;
+            label_centers[i].width = label_bounds[i].width+2;
             label_centers[i].height = label_bounds[i].height;
         }
 
@@ -182,7 +180,7 @@ body {
             .style("fill", 'white')
             .style("fill-opacity", '0.0')
             .style("stroke", "black")
-            .style("stroke-opacity", "1.0");
+            .style("stroke-opacity", "0.0");
 
         // Draw data points
         circ = svg.selectAll(".circ")
@@ -223,8 +221,12 @@ body {
             .sim_anneal(10000);
         redrawLabels();
         });
+
+    var avg_time = 0.0;
+
+    for (var i = 0; i < 100; i++) {
     
-    randomize(150);
+    randomize(25);
 
     var begin= new Date().getTime();
 
@@ -234,12 +236,19 @@ body {
             .nodes(label_centers)
             .anchor(anchor)
             .anchor_radius(4)
-            .width(width).height(height)
-            .sim_anneal(10000);
+            .width(width-30.0).height(height)
+            .sim_anneal(1000);
         redrawLabels();
 
     var end = new Date().getTime();
 
-    console.log(end - begin);
+    console.log(i, end - begin);
+    avg_time += ((end - begin) / 1000.0);
+
+    }
+
+    console.log("Average");
+    console.log(avg_time / 100.0);
+
 
 </script>

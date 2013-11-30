@@ -215,7 +215,7 @@ d3.anneal = function() {
         }
         currT = cooling_schedule(currT, initialT, nsweeps);
       }
-      console.log(acc / (acc + rej));
+      // console.log(acc / (acc + rej));
   };
 
   anneal.test = function() {
