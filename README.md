@@ -7,7 +7,7 @@ Installation
 ------------
 
 Download anneal.js. Include the plug-in with the command:
-```javascript
+```html
 <script src="anneal.js"></script>
 ```
 
