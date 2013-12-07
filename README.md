@@ -6,7 +6,7 @@ A D3 plug-in for automatic label placement using simulated annealing that easily
 Installation
 ------------
 
-Download labeler.js. Include the plug-in in the relevant .html file with:
+Download <i>labeler.js</i>. Include the plug-in in the relevant .html file with:
 ```html
 <script src="labeler.js"></script>
 ```
@@ -30,7 +30,7 @@ var labels = d3.labeler()
                .height(h)
                .start(nsweeps);
 ```
-The default settings are: width = 1, height = 1, and nsweeps = 1000. The default label_array and anchor_array are empty arrays. Here we describe each term in more detail.
+The default settings are: <i>w</i> = 1, <i>h</i> = 1, and <i>nsweeps</i> = 1000. The default <i>label_array</i> and <i>anchor_array</i> are empty arrays. Here we describe each term in more detail.
 
 d3.<b>labeler</b>()
 
