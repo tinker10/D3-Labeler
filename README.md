@@ -62,15 +62,61 @@ The width and height are used to set the boundary conditions so that labels do n
 
 labeler.<b>start</b>(<i>nsweeps</i>)
 
-Finally, we specify the number of Monte Carlo sweeps for the optimization and run the simulated annealing procedure. The default for nsweeps is 1000. Note that one Monte Carlo sweep means that on average, each label is translated or rotated once. To obtain the actual number of Monte Carlo steps taken, multiply the number of sweeps by the number of labels N.
+Finally, we specify the number of Monte Carlo sweeps for the optimization and run the simulated annealing procedure. The default for <i>nsweeps</i> is 1000. Note that one Monte Carlo sweep means that on average, each label is translated or rotated once. To obtain the actual number of Monte Carlo steps taken, multiply the number of sweeps by the number of labels.
 
 labeler.<b>alt_energy</b>(<i>user_defined_energy</i>)
-labeler.<b>alt_energy</b>(<i>user_defined_energy</i>)
 
-Implementation details
-----------------------
+This function is constructed for <i>expert users</i>. The quality of the configuration is closely related to the energy function. The default energy function includes general labeling preferences (details below) and is suggested for most users. However, a user may wish to define his or her own energy function to suit individual preferences. 
+```javascript
+new_energy_function = function(index, label_array, anchor_array) {
+    var ener = 0;
+    // insert user-defined interaction energies here
+    return ener;
+}
+```
+The newly constructed function must take as input an integer <i>index</i>, an array of labels <i>label_array</i>, and an array of anchors <i>anchor_array</i>. This function must also return an energy term that should correspond to the energy of a particular label, namely <i>label_array[index]</i>. One may wish calculate an energy of interaction for <i>label_array[index]</i> with all other labels and anchors. 
+```javascript
+var labels = d3.labeler()
+               .nodes(label_array)
+               .anchor(anchor_array)
+               .width(w)
+               .height(h)
+               .start(nsweeps);
+```
+
+labeler.<b>alt_schedule</b>(<i>user_defined_schedule</i>)
+
+Similarly, an expert user may wish to include a custom cooling schedule used in the simulated annealing procedure. The default cooling schedule is linear. 
+```javascript
+new_cooling_schedule = function(currT, initialT, nsweeps) {
+    // insert user-defined schedule here
+    return updatedT;
+}
+```
+This function takes as input the current simulation temperature <i>currT</i>, the initial temperature <i>initialT</i>, and the total number of sweeps <i>nsweeps</i> and returns the updated temperature <i>updatedT</i>. The user defined functions can be included as follows:
+
+```javascript
+var labels = d3.labeler()
+               .nodes(label_array)
+               .anchor(anchor_array)
+               .width(w)
+               .height(h)
+               .alt_energy(new_energy_function)
+               .alt_schedule(new_cooling_schedule)
+               .start(nsweeps);
+```
 
 
+Default energy function details
+-------------------------------
+
+In order to distinguish between the quality of different configurations in our search space, we need construct a function which takes as input a label configuration and outputs a score indicating the quality of the placements. In a labeling problem, the inputs are themselves functions of various parameters such as the amount of overlaps, distances between labels and their corresponding anchor points, and various stylistic preferences. This function, often an energy (also called cost or objective) function, is what we need to optimize. The default energy function includes penalties for:
+
+* Label-label overlaps
+* Label-anchor overlaps
+* Labels far from the corresponding anchor
+* Leader line intersections
+* Poorly oriented labels
 
 Author
 ------
