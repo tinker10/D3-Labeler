@@ -6,7 +6,7 @@ A D3 plug-in for automatic label placement using simulated annealing that easily
 Installation
 ------------
 
-Download <i>labeler.js</i>. Include the plug-in in the relevant .html file with:
+Download <i>labeler.js</i>. Include the plug-in within the relevant .html file with:
 ```html
 <script src="labeler.js"></script>
 ```
@@ -38,13 +38,15 @@ Start by declaring a labeling layout, the same as declaring any other D3 layout.
 
 labeler.<b>label</b>([<i>label_array</i>])
 
-Each label has the following attributes. Note that width and height can be easily measured using the SVG getBBox() method. The dimensions are used to calculate overlaps.
+Each label has the following attributes:
 
 * x - the *x*-coordinate of the label.
 * y - the *y*-coordinate of the label.
 * width - the *width* of the label (approximating the label as a rectangle).
 * height - the *height* of the label (same approximation).
 * name - the label text.
+
+Note that width and height can be easily measured using the SVG getBBox() method. The dimensions are used to calculate overlaps.
 
 labeler.<b>anchor</b>([<i>anchor_array</i>])
 
@@ -75,14 +77,6 @@ new_energy_function = function(index, label_array, anchor_array) {
 }
 ```
 The newly constructed function must take as input an integer <i>index</i>, an array of labels <i>label_array</i>, and an array of anchors <i>anchor_array</i>. This function must also return an energy term that should correspond to the energy of a particular label, namely <i>label_array[index]</i>. One may wish calculate an energy of interaction for <i>label_array[index]</i> with all other labels and anchors. 
-```javascript
-var labels = d3.labeler()
-               .nodes(label_array)
-               .anchor(anchor_array)
-               .width(w)
-               .height(h)
-               .start(nsweeps);
-```
 
 labeler.<b>alt_schedule</b>(<i>user_defined_schedule</i>)
 
