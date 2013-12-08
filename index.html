@@ -47,7 +47,7 @@ body {
 -->
 
 <script src="http://d3js.org/d3.v3.min.js"></script>
-<script src="anneal.js"></script>
+<script src="labeler.js"></script>
 <script>
 
     var anchor = [],
@@ -112,6 +112,7 @@ body {
         anchor = [];
         label_centers = [];
         label_bounds = [];
+        radius = 4;
 
         for (var i = 0; i < count; i++) {
             // var xval=x_mean + (2 * Math.random() - 1.0) * x_std * 1.5;
@@ -122,7 +123,7 @@ body {
             
             // var xval=x_mean/2;
             // var yval=y_mean/2;
-            anchor.push({x: xval, y: yval, name: "Node "+String(i)});
+            anchor.push({x: xval, y: yval, r: radius});
             label_centers.push({x: xval, y: yval, name: "Node "+String(i), width: 0.0, height: 0.0});
         }
 
@@ -214,11 +215,13 @@ body {
     // Demonstration examples
     d3.select("#randomize1").on("click",function() {
         randomize(40)
-        var sim_ann = d3.anneal()
-            .nodes(label_centers)
-            .anchor(anchor).anchor_radius(4)
-            .width(width).height(height)
-            .sim_anneal(10000);
+        var sim_ann = d3.labeler()
+            .label(label_centers)
+            .anchor(anchor)
+            .width(width)
+            .height(height)
+            .start(1000);
+
         redrawLabels();
         });
 
@@ -227,19 +230,51 @@ body {
     var num_trials = 1;
     for (var i = 0; i < num_trials; i++) {
     
-    randomize(150);
+    randomize(50);
 
     // var begin= new Date().getTime();
 
     // Milliseconds();
 
-    var sim_ann = d3.anneal()
-            .nodes(label_centers)
+        var sim_ann = d3.labeler()
+            .label(label_centers)
             .anchor(anchor)
-            .anchor_radius(4)
-            .width(width-30.0).height(height)
-            .sim_anneal(1000);
+            .width(width)
+            .height(height);
+
+  new_energy_function = function(index, label_array, anchor_array) {
+  // energy function, tailored for label placement
+
+  // console.log('works')
+
+  var w_len = 0.2, // leader line length 
+      w_inter = 1.0, // leader line intersection
+      w_lab2 = 30.0, // label-label overlap
+      w_lab_anc = 30.0; // label-anchor overlap
+      w_orient = 3.0; // orientation bias
+
+      var m = label_array.length,
+          ener = 0,
+          dx = label_array[index].x - anchor_array[index].x,
+          dy = anchor_array[index].y - label_array[index].y,
+          dist = Math.sqrt(dx * dx + dy * dy),
+          overlap = true,
+          amount = 0
+          theta = 0;
+
+      // penalty for length of leader line
+      if (dist > 0) ener += dist * w_len;
+
+      return ener;
+  };
+
+
+        sim_ann.alt_energy(new_energy_function);
+        sim_ann.start(1000);
+            
         redrawLabels();
+
+
 
     // var end = new Date().getTime();
 

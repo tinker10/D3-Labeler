@@ -1,12 +1,11 @@
 (function() {
 
-d3.anneal = function() {
+d3.labeler = function() {
   var lab = [],
       anc = [],
       w = 1, // box width
       h = 1, // box width
-      r = 1, // anchor radius
-      anneal = {};
+      labeler = {};
 
   var max_move = 5.0,
       max_angle = 0.5,
@@ -19,6 +18,13 @@ d3.anneal = function() {
       w_lab2 = 30.0, // label-label overlap
       w_lab_anc = 30.0; // label-anchor overlap
       w_orient = 3.0; // orientation bias
+
+  // booleans for user defined functions
+  var user_energy = false,
+      user_schedule = false;
+
+  var user_defined_energy, 
+      user_defined_schedule;
 
   energy = function(index) {
   // energy function, tailored for label placement
@@ -33,7 +39,6 @@ d3.anneal = function() {
           theta = 0;
 
       // penalty for length of leader line
-      // dist -= (lab_rad+anc_rad);
       if (dist > 0) ener += dist * w_len;
 
       // label orientation bias
@@ -70,10 +75,10 @@ d3.anneal = function() {
           }
 
           // penalty for label-anchor overlap
-          x11 = anc[i].x - r;
-          y11 = anc[i].y - r;
-          x12 = anc[i].x + r;
-          y12 = anc[i].y + r;
+          x11 = anc[i].x - anc[i].r;
+          y11 = anc[i].y - anc[i].r;
+          x12 = anc[i].x + anc[i].r;
+          y12 = anc[i].y + anc[i].r;
           x_overlap = Math.max(0, Math.min(x12,x22) - Math.max(x11,x21));
           y_overlap = Math.max(0, Math.min(y12,y22) - Math.max(y11,y21));
           overlap_area = x_overlap * y_overlap;
@@ -94,7 +99,9 @@ d3.anneal = function() {
       var y_old = lab[i].y;
 
       // old energy
-      var old_energy = energy(i);
+      var old_energy;
+      if (user_energy) {old_energy = user_defined_energy(i, lab, anc)}
+      else {old_energy = energy(i)}
 
       // random translation
       lab[i].x += (Math.random() - 0.5) * max_move;
@@ -107,7 +114,9 @@ d3.anneal = function() {
       if (lab[i].y < 0) lab[i].y = y_old;
 
       // new energy
-      var new_energy = energy(i);
+      var new_energy;
+      if (user_energy) {new_energy = user_defined_energy(i, lab, anc)}
+      else {new_energy = energy(i)}
 
       // delta E
       var delta_energy = new_energy - old_energy;
@@ -134,7 +143,9 @@ d3.anneal = function() {
       var y_old = lab[i].y;
 
       // old energy
-      var old_energy = energy(i);
+      var old_energy;
+      if (user_energy) {old_energy = user_defined_energy(i, lab, anc)}
+      else {old_energy = energy(i)}
 
       // random angle
       var angle = (Math.random() - 0.5) * max_angle;
@@ -161,7 +172,9 @@ d3.anneal = function() {
       if (lab[i].y < 0) lab[i].y = y_old;
 
       // new energy
-      var new_energy = energy(i);
+      var new_energy;
+      if (user_energy) {new_energy = user_defined_energy(i, lab, anc)}
+      else {new_energy = energy(i)}
 
       // delta E
       var delta_energy = new_energy - old_energy;
@@ -202,55 +215,7 @@ d3.anneal = function() {
     return (currT - (initialT / nsweeps));
   }
 
-  counter = function() {
-
-      var m = lab.length;
-
-      var tot_inter = 0,
-          ll_overlap = 0,
-          la_overlap = 0;
-
-      // for (var i = 0; i < (m - 1); i++) {
-        // for (var j = i + 1; j < m; j++) {
-      for (var i = 0; i < m; i++) {
-        for (var j = i ; j < m; j++) {
-
-          // intersection
-          tot_inter += overlap = intersect(anc[j].x, lab[j].x, anc[i].x, lab[i].x,
-                          anc[j].y, lab[j].y, anc[i].y, lab[i].y);
-
-          var x21 = lab[i].x,
-          y21 = lab[i].y - lab[i].height + 2.0,
-          x22 = lab[i].x + lab[i].width,
-          y22 = lab[i].y + 2.0;
-          var x11, x12, y11, y12, x_overlap, y_overlap, overlap_area;
-
-          // label-label overlap
-          x11 = lab[j].x;
-          y11 = lab[j].y - lab[j].height + 2.0;
-          x12 = lab[j].x + lab[j].width;
-          y12 = lab[j].y + 2.0;
-          x_overlap = Math.max(0, Math.min(x12,x22) - Math.max(x11,x21));
-          y_overlap = Math.max(0, Math.min(y12,y22) - Math.max(y11,y21));
-          overlap_area = x_overlap * y_overlap;
-          if (overlap_area > 0.0) ll_overlap += 1;
-
-          // label-anchor overlap
-          x11 = anc[j].x - r;
-          y11 = anc[j].y - r;
-          x12 = anc[j].x + r;
-          y12 = anc[j].y + r;
-          x_overlap = Math.max(0, Math.min(x12,x22) - Math.max(x11,x21));
-          y_overlap = Math.max(0, Math.min(y12,y22) - Math.max(y11,y21));
-          overlap_area = x_overlap * y_overlap;
-          if (overlap_area > 0.0) la_overlap += 1;
-        }
-      }
-      // console.log(tot_inter, ll_overlap, la_overlap)
-      return la_overlap
-  };
-
-  anneal.sim_anneal = function(nsweeps) {
+  labeler.start = function(nsweeps) {
   // main simulated annealing function
       var m = lab.length,
           currT = 1.0,
@@ -263,54 +228,53 @@ d3.anneal = function() {
         }
         currT = cooling_schedule(currT, initialT, nsweeps);
       }
-      var c = counter();
-      // console.log(c)
-      // console.log(acc / (acc + rej));
-      return c;
   };
 
-  anneal.test = function() {
-  // testing mode
-      console.log('Testing mode.');
-      energy(0);
-  };
-
-  anneal.width = function(x) {
+  labeler.width = function(x) {
   // users insert graph width
     if (!arguments.length) return w;
     w = x;
-    return anneal;
+    return labeler;
   };
 
-  anneal.height = function(x) {
+  labeler.height = function(x) {
   // users insert graph height
     if (!arguments.length) return h;
     h = x;    
-    return anneal;
+    return labeler;
   };
 
-  anneal.nodes = function(x) {
+  labeler.label = function(x) {
   // users insert label positions
     if (!arguments.length) return lab;
     lab = x;
-    return anneal;
+    return labeler;
   };
 
-  anneal.anchor = function(x) {
+  labeler.anchor = function(x) {
   // users insert anchor positions
     if (!arguments.length) return anc;
     anc = x;
-    return anneal;
+    return labeler;
   };
 
-  anneal.anchor_radius = function(x) {
-  // users insert radius of achor points
-    if (!arguments.length) return r;
-    r = x;
-    return anneal;
+  labeler.alt_energy = function(x) {
+  // user defined energy
+    if (!arguments.length) return energy;
+    user_defined_energy = x;
+    user_energy = true;
+    return labeler;
   };
 
-  return anneal;
+  labeler.alt_schedule = function(x) {
+  // user defined cooling_schedule
+    if (!arguments.length) return  cooling_schedule;
+    user_defined_schedule = x;
+    user_schedule = true;
+    return labeler;
+  };
+
+  return labeler;
 };
 
 })();
