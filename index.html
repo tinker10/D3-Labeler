@@ -190,9 +190,8 @@ Number of MC sweeps: <input type="text" id="n_sweeps" value=1000> &nbsp;&nbsp;|&
             .attr("fill", "black");
 
         // Size of each label
-        var index = 0
+        var index = 0;
         labels.each(function() {
-            console.log(index)
             label_array[index].width = this.getBBox().width;
             label_array[index].height = this.getBBox().height;
             index += 1;
