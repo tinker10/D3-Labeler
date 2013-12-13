@@ -3,6 +3,8 @@ D3-Labeler
 
 A D3 plug-in for automatic label placement using simulated annealing that easily incorporates into existing D3 code, with syntax mirroring other D3 layouts. 
 
+[View a demo here](http://tinker10.github.io/D3-Labeler/). 
+
 Installation
 ------------
 
