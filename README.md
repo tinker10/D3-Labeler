@@ -24,7 +24,7 @@ Usage
 To automatically place labels, users declare a labeler (simulated annealing) layout, input label and anchor positions, the figure boundaries, and the number of Monte Carlo sweeps for simulated annealing. The general pattern is as follows:
 ```javascript
 var labels = d3.labeler()
-               .nodes(label_array)
+               .label(label_array)
                .anchor(anchor_array)
                .width(w)
                .height(h)
@@ -46,6 +46,10 @@ Each label has the following attributes:
 * height - the *height* of the label (same approximation).
 * name - the label text.
 
+```javascript
+var label_array = [{x: 10.2, y: 17.1, name: "Node 3", width: 18.0, height: 7.2}, ...]
+```
+
 Note that width and height can be easily measured using the SVG getBBox() method. The dimensions are used to calculate overlaps.
 
 labeler.<b>anchor</b>([<i>anchor_array</i>])
@@ -55,6 +59,10 @@ Each anchor has the following attributes:
 * x - the *x*-coordinate of the anchor.
 * y - the *y*-coordinate of the anchor.
 * r - the anchor radius (assuming anchor is a circle). 
+
+```javascript
+var anchor_array = [{x: 5.3, y: 12.0, r: 7}, {x: 16.8, y: 23.5, r: 7}, ...]
+```
 
 labeler.<b>width</b>(<i>w</i>)
 
@@ -91,7 +99,7 @@ This function takes as input the current simulation temperature <i>currT</i>, th
 
 ```javascript
 var labels = d3.labeler()
-               .nodes(label_array)
+               .label(label_array)
                .anchor(anchor_array)
                .width(w)
                .height(h)
