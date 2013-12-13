@@ -13,10 +13,6 @@ body {
   shape-rendering: crispEdges;
 }
 
-.dot {
-
-}
-
 .circ {
   stroke: #000;
 }
@@ -25,51 +21,69 @@ body {
   stroke: #000;
 }
 
-.axis_label {
-  font: 10px sans-serif;
-}
-
 .label {
-  font: 10px sans-serif;
+  font: 14px sans-serif;
 }
 
-.link { stroke:gray;stroke-width:0.5}
+.link { 
+    stroke:gray;
+    stroke-width:0.5
+}
+
+div {
+    margin-top:35px;
+    margin-bottom:0px;
+    margin-left:150px;
+}
+
+p {
+    font-family: sans-serif;
+    font-size: 14px;
+}
 
 </style>
 <body>
 
-<button type="button" id="randomize1">Start annealing</button>
-<!--
-<button type="button" id="randomize1">Replace with 20</button>
-<button type="button" id="randomize2">Replace with 40</button>
-<button type="button" id="scatter_plot">Scatter plot</button>
-<button type="button" id="line_plot">Line plot</button>
--->
+<div>
 
-<script src="http://d3js.org/d3.v3.min.js"></script>
+<h2>D3-Labeler</h2>
+<p>A D3 plug-in for automatic label placement using simulated annealing that easily incorporates into existing D3 code, with syntax <br> mirroring other D3 layouts.</p>
+
+<form>
+Number of labels: <input type="text" id="n_labels" value=50> &nbsp;&nbsp;|&nbsp;&nbsp;
+<input type="radio" name="dist" id="uniform" value="Uniform" checked="checked">Uniform&nbsp;&nbsp;<input type="radio" name="dist" id="gaussian" value="Gaussian">Gaussian&nbsp;&nbsp;|&nbsp;&nbsp; 
+Number of MC sweeps: <input type="text" id="n_sweeps" value=1000> &nbsp;&nbsp;|&nbsp;&nbsp;
+<button type="button" id="start">Label</button>
+</form> 
+
+</div>
+
+<script src="http://d3js.org/d3.v3.min.js" charset="utf-8"></script>
 <script src="labeler.js"></script>
 <script>
 
-    var anchor = [],
-        label_centers = [],
+    // Global variables
+    var anchor_array = [],
+        label_array = [],
         label_bounds = [],
-        margin = {top: 20, right: 20, bottom: 30, left: 10},
-        width = 430 - margin.left - margin.right,
-        height = 400 - margin.top - margin.bottom,
+        margin = {top: 20, right: 300, bottom: 60, left: 150},
+        width = 1240 - margin.left - margin.right,
+        height = 530 - margin.top - margin.bottom,
         x_mean = width/2,
-        x_std = width/4,
         y_mean = height/2,
-        y_std = height/4,
-        offset = 4;
+        offset = 4,
+        radius = 7;
 
     var anchor_data, labels, circ, links, bounds;
 
+    // Setup canvas
     var svg = d3.select("body").append("svg")
         .attr("width", width + margin.left + margin.right)
         .attr("height", height + margin.top + margin.bottom)
         .append("g")
         .attr("transform", "translate(" + margin.left + "," + margin.top + ")");
 
+    // Draw boundaries of figure
     var plot_boundary = svg.append("rect")
             .attr("x", 0.0)
             .attr("y", 0.0)
@@ -77,54 +91,75 @@ body {
             .attr("height", height)
             .style("fill-opacity", '0.0')
             .style("stroke", "black")
-            .style("stroke-opacity", "0.0");
+            .style("stroke-opacity", "0.4");
 
 
     // Functions
+
+    function gaussian() {
+        // Box-Muller transformation
+        do
+        {
+            u = 2 * Math.random() - 1;
+            v = 2 * Math.random() - 1;
+            r = u * u + v * v;
+        }
+        while (r >= 1.0);
+
+        var c = Math.sqrt(-2 * Math.log(r) / r );
+        return u * c;
+    }
+
     function redrawLabels() {
+        // Redraw labels and leader lines
+
         labels
         .transition()
-        .duration(1000)
+        .duration(800)
         .attr("x", function(d) { return (d.x); })
         .attr("y", function(d) { return (d.y); });
 
         links
         .transition()
-        .duration(1000)
+        .duration(800)
         .attr("x2",function(d) { return (d.x); })
         .attr("y2",function(d) { return (d.y); });
-
-        circ
-        .transition()
-        .duration(1000)
-        .attr("cx",function(d) { return (d.x); })
-        .attr("cy",function(d) { return (d.y - offset); });
-
-        bounds
-        .transition()
-        .duration(1000)
-        .attr("x",function(d) { return (d.x); })
-        .attr("y",function(d) { return (d.y - 10); });
-
     }
 
-    function randomize(count) {
-        anchor = [];
-        label_centers = [];
+    function randomize(count, is_uniform) {
+        anchor_array = [];
+        label_array = [];
         label_bounds = [];
-        radius = 4;
 
         for (var i = 0; i < count; i++) {
-            // var xval=x_mean + (2 * Math.random() - 1.0) * x_std * 1.5;
-            // var yval=y_mean + (2 * Math.random() - 1.0) * y_std * 1.5;
-
-            var xval=Math.random() * (5 + width - 25);
-            var yval=Math.random() * (2.5 + height - 5);
             
-            // var xval=x_mean/2;
-            // var yval=y_mean/2;
-            anchor.push({x: xval, y: yval, r: radius});
-            label_centers.push({x: xval, y: yval, name: "Node "+String(i), width: 0.0, height: 0.0});
+            var xval, yval;
+
+            if (is_uniform) {
+                // Uniformly distributed of x, y
+                do {
+                    xval=Math.random() * width;
+                } while (xval < 10 || xval > width - 60);
+
+                do {
+                    yval=Math.random() * width;
+                } while (yval < 28 || yval > height - 15);
+
+            } else {
+                // Gaussian distributed x, y
+                do {
+                    xval = x_mean + gaussian() * width / 6;
+                } while (xval < 10 || xval > width - 60);
+
+                do {
+                    yval = y_mean + gaussian() * height / 6;
+                } while (yval < 28 || yval > height - 15);
+
+            }
+
+            // Put label and anchor positions into arrays
+            anchor_array.push({x: xval, y: yval, r: radius});
+            label_array.push({x: xval, y: yval, name: "Node "+String(i), width: 0.0, height: 0.0});
         }
 
         // Delete old stuff
@@ -135,18 +170,18 @@ body {
         svg.selectAll(".rect").data([]).exit().remove();
 
         // Draw anchors
-        anchor_data = svg.selectAll(".dot")
-            .data(anchor)
+        anchors = svg.selectAll(".dot")
+            .data(anchor_array)
             .enter().append("circle")
             .attr("class", "dot")
-            .attr("r", 4.0)
+            .attr("r", function(d) { return (d.r); })
             .attr("cx", function(d) { return (d.x); })
             .attr("cy", function(d) { return (d.y); })
             .style("fill", 'green');
 
         // Draw labels
         labels = svg.selectAll(".label")
-            .data(label_centers)
+            .data(label_array)
             .enter()
             .append("text")
             .attr("class", "label")
@@ -157,35 +192,18 @@ body {
             .attr("fill", "black");
 
         // Size of each label
-        
         labels.each(function() {
-            // console.log(this.getBBox());
             label_bounds.push(this.getBBox());
         });
 
         for (var i = 0; i < count; i++) {
-            label_centers[i].width = label_bounds[i].width+2;
-            label_centers[i].height = label_bounds[i].height;
+            label_array[i].width = label_bounds[i].width;
+            label_array[i].height = label_bounds[i].height;
         }
-
-        // Draw label boundaries
-        bounds = svg.selectAll(".rect")
-            .data(label_centers)
-            .enter()
-            .append("rect")
-            .attr("class", "rect")
-            .attr("x", function(d) { return (d.x); })
-            .attr("y", function(d) { return (d.y - 10); })
-            .attr("width", function(d) { return (d.width); })
-            .attr("height", function(d) { return (d.height); })
-            .style("fill", 'white')
-            .style("fill-opacity", '0.0')
-            .style("stroke", "black")
-            .style("stroke-opacity", "0.0");
 
         // Draw data points
         circ = svg.selectAll(".circ")
-            .data(label_centers)
+            .data(label_array)
             .enter().append("circle")
             .attr("class", ".circ")
             .attr("r", 20.0)
@@ -196,7 +214,7 @@ body {
 
         // Draw links
         links = svg.selectAll(".link")
-            .data(label_centers)
+            .data(label_array)
             .enter()
             .append("line")
             .attr("class", "link")
@@ -204,87 +222,46 @@ body {
             .attr("y1", function(d) { return (d.y); })
             .attr("x2", function(d) { return (d.x); })
             .attr("y2", function(d) { return (d.y); })
-            .attr("stroke-width", 0.5)
+            .attr("stroke-width", 0.6)
             .attr("stroke", "gray");
-
-        // Implement simulated annealing
         
-        redrawLabels();
     };
 
-    // Demonstration examples
-    d3.select("#randomize1").on("click",function() {
-        randomize(40)
+    // Start button function
+    d3.select("#start").on("click",function() {
+
+        // Get user-defined parameters
+        var nlabels = document.getElementById('n_labels').value;
+        var is_uniform = document.getElementById('uniform').checked;
+        var nsweeps = document.getElementById('n_sweeps').value;
+
+        // Randomly distribute data
+        randomize(nlabels, is_uniform);
+
+        // Setup labels
         var sim_ann = d3.labeler()
-            .label(label_centers)
-            .anchor(anchor)
+            .label(label_array)
+            .anchor(anchor_array)
             .width(width)
             .height(height)
-            .start(1000);
+            .start(nsweeps);
 
+        // Redraw
         redrawLabels();
+
         });
-
-    var avg_time = 0;
-
-    var num_trials = 1;
-    for (var i = 0; i < num_trials; i++) {
     
-    randomize(50);
+    // Default starting parameters
+    // 50 labels, uniformly distributed in x, y
+    randomize(50, true);
 
-    // var begin= new Date().getTime();
-
-    // Milliseconds();
-
-        var sim_ann = d3.labeler()
-            .label(label_centers)
-            .anchor(anchor)
+    var sim_ann = d3.labeler()
+            .label(label_array)
+            .anchor(anchor_array)
             .width(width)
-            .height(height);
-
-  new_energy_function = function(index, label_array, anchor_array) {
-  // energy function, tailored for label placement
-
-  // console.log('works')
-
-  var w_len = 0.2, // leader line length 
-      w_inter = 1.0, // leader line intersection
-      w_lab2 = 30.0, // label-label overlap
-      w_lab_anc = 30.0; // label-anchor overlap
-      w_orient = 3.0; // orientation bias
-
-      var m = label_array.length,
-          ener = 0,
-          dx = label_array[index].x - anchor_array[index].x,
-          dy = anchor_array[index].y - label_array[index].y,
-          dist = Math.sqrt(dx * dx + dy * dy),
-          overlap = true,
-          amount = 0
-          theta = 0;
-
-      // penalty for length of leader line
-      if (dist > 0) ener += dist * w_len;
-
-      return ener;
-  };
-
-
-        sim_ann.alt_energy(new_energy_function);
-        sim_ann.start(1000);
+            .height(height)
+            sim_ann.start(1000);
             
-        redrawLabels();
-
-
-
-    // var end = new Date().getTime();
-
-    // console.log(i, end - begin);
-    avg_time += sim_ann;
-    console.log(i, sim_ann);
-
-    }
-    // console.log("Average");
-    console.log(avg_time / num_trials);
-
+    redrawLabels();
 
 </script>
