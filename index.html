@@ -65,7 +65,6 @@ Number of MC sweeps: <input type="text" id="n_sweeps" value=1000> &nbsp;&nbsp;|&
     // Global variables
     var anchor_array = [],
         label_array = [],
-        label_bounds = [],
         margin = {top: 20, right: 300, bottom: 60, left: 150},
         width = 1240 - margin.left - margin.right,
         height = 530 - margin.top - margin.bottom,
@@ -129,7 +128,6 @@ Number of MC sweeps: <input type="text" id="n_sweeps" value=1000> &nbsp;&nbsp;|&
     function randomize(count, is_uniform) {
         anchor_array = [];
         label_array = [];
-        label_bounds = [];
 
         for (var i = 0; i < count; i++) {
             
@@ -192,14 +190,13 @@ Number of MC sweeps: <input type="text" id="n_sweeps" value=1000> &nbsp;&nbsp;|&
             .attr("fill", "black");
 
         // Size of each label
+        var index = 0
         labels.each(function() {
-            label_bounds.push(this.getBBox());
+            console.log(index)
+            label_array[index].width = this.getBBox().width;
+            label_array[index].height = this.getBBox().height;
+            index += 1;
         });
-
-        for (var i = 0; i < count; i++) {
-            label_array[i].width = label_bounds[i].width;
-            label_array[i].height = label_bounds[i].height;
-        }
 
         // Draw data points
         circ = svg.selectAll(".circ")
