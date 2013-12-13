@@ -52,6 +52,15 @@ var label_array = [{x: 10.2, y: 17.1, name: "Node 3", width: 18.0, height: 7.2},
 
 Note that width and height can be easily measured using the SVG getBBox() method. The dimensions are used to calculate overlaps.
 
+```javascript
+var index = 0;
+labels.each(function() {
+   label_array[index].width = this.getBBox().width;
+   label_array[index].height = this.getBBox().height;
+   index += 1;
+});
+```
+
 labeler.<b>anchor</b>([<i>anchor_array</i>])
 
 Each anchor has the following attributes:
