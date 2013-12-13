@@ -1,1 +1,274 @@
-My GitHub Page
+<!DOCTYPE html>
+<meta charset="utf-8">
+
+<head>
+
+<title>D3-Labeler</title>
+
+<style>
+
+body {
+  font: 10px sans-serif;
+}
+
+.axis path,
+.axis line {
+  fill: none;
+  stroke: #000;
+  shape-rendering: crispEdges;
+}
+
+.circ {
+  stroke: #000;
+}
+
+.rect {
+  stroke: #000;
+}
+
+.label {
+  font: 14px sans-serif;
+}
+
+.link { 
+    stroke:gray;
+    stroke-width:0.5
+}
+
+h2 { 
+    font-size: 22px;
+}
+
+div {
+    margin-top:35px;
+    margin-bottom:0px;
+    margin-left:150px;
+}
+
+p {
+    font-family: sans-serif;
+    font-size: 14px;
+}
+
+</style>
+</head>
+
+<body>
+
+<div>
+
+<h2>D3-Labeler</h2>
+<p>A D3 plug-in for automatic label placement using simulated annealing that easily incorporates into existing D3 code, with <br> syntax mirroring other D3 layouts.</p>
+
+<form>
+Number of labels: <input type="text" id="n_labels" value=50 size="6"> &nbsp;&nbsp;|&nbsp;&nbsp;
+<input type="radio" name="dist" id="uniform" value="Uniform" checked="checked">Uniform&nbsp;&nbsp;<input type="radio" name="dist" id="gaussian" value="Gaussian">Gaussian&nbsp;&nbsp;|&nbsp;&nbsp; 
+Number of MC sweeps: <input type="text" id="n_sweeps" value=1000 size="6"> &nbsp;&nbsp;|&nbsp;&nbsp;
+<button type="button" id="start">Label</button>
+</form> 
+
+</div>
+
+<script src="http://d3js.org/d3.v3.min.js" charset="utf-8"></script>
+<script src="labeler.js"></script>
+<script>
+
+    // Global variables
+    var anchor_array = [],
+        label_array = [],
+        margin = {top: 20, right: 300, bottom: 60, left: 150},
+        width = 1240 - margin.left - margin.right,
+        height = 530 - margin.top - margin.bottom,
+        x_mean = width/2,
+        y_mean = height/2,
+        offset = 4,
+        radius = 7;
+
+    var anchor_data, labels, circ, links, bounds;
+
+    // Setup canvas
+    var svg = d3.select("body").append("svg")
+        .attr("width", width + margin.left + margin.right)
+        .attr("height", height + margin.top + margin.bottom)
+        .append("g")
+        .attr("transform", "translate(" + margin.left + "," + margin.top + ")");
+
+    // Draw boundaries of figure
+    var plot_boundary = svg.append("rect")
+            .attr("x", 0.0)
+            .attr("y", 0.0)
+            .attr("width", width)
+            .attr("height", height)
+            .style("fill-opacity", '0.0')
+            .style("stroke", "black")
+            .style("stroke-opacity", "0.4");
+
+
+    // Functions
+
+    function gaussian() {
+        // Box-Muller transformation
+        do
+        {
+            u = 2 * Math.random() - 1;
+            v = 2 * Math.random() - 1;
+            r = u * u + v * v;
+        }
+        while (r >= 1.0);
+
+        var c = Math.sqrt(-2 * Math.log(r) / r );
+        return u * c;
+    }
+
+    function redrawLabels() {
+        // Redraw labels and leader lines
+
+        labels
+        .transition()
+        .duration(800)
+        .attr("x", function(d) { return (d.x); })
+        .attr("y", function(d) { return (d.y); });
+
+        links
+        .transition()
+        .duration(800)
+        .attr("x2",function(d) { return (d.x); })
+        .attr("y2",function(d) { return (d.y); });
+    }
+
+    function randomize(count, is_uniform) {
+        anchor_array = [];
+        label_array = [];
+
+        for (var i = 0; i < count; i++) {
+            
+            var xval, yval;
+
+            if (is_uniform) {
+                // Uniformly distributed of x, y
+                do {
+                    xval=Math.random() * width;
+                } while (xval < 10 || xval > width - 60);
+
+                do {
+                    yval=Math.random() * width;
+                } while (yval < 28 || yval > height - 15);
+
+            } else {
+                // Gaussian distributed x, y
+                do {
+                    xval = x_mean + gaussian() * width / 6;
+                } while (xval < 10 || xval > width - 60);
+
+                do {
+                    yval = y_mean + gaussian() * height / 6;
+                } while (yval < 28 || yval > height - 15);
+
+            }
+
+            // Put label and anchor positions into arrays
+            anchor_array.push({x: xval, y: yval, r: radius});
+            label_array.push({x: xval, y: yval, name: "Node "+String(i), width: 0.0, height: 0.0});
+        }
+
+        // Delete old stuff
+        svg.selectAll(".dot").data([]).exit().remove();
+        svg.selectAll(".label").data([]).exit().remove();
+        svg.selectAll(".circ").data([]).exit().remove();
+        svg.selectAll(".link").data([]).exit().remove();
+        svg.selectAll(".rect").data([]).exit().remove();
+
+        // Draw anchors
+        anchors = svg.selectAll(".dot")
+            .data(anchor_array)
+            .enter().append("circle")
+            .attr("class", "dot")
+            .attr("r", function(d) { return (d.r); })
+            .attr("cx", function(d) { return (d.x); })
+            .attr("cy", function(d) { return (d.y); })
+            .style("fill", 'green');
+
+        // Draw labels
+        labels = svg.selectAll(".label")
+            .data(label_array)
+            .enter()
+            .append("text")
+            .attr("class", "label")
+            .attr('text-anchor', 'start')
+            .text(function(d) { return d.name; })
+            .attr("x", function(d) { return (d.x); })
+            .attr("y", function(d) { return (d.y); })
+            .attr("fill", "black");
+
+        // Size of each label
+        var index = 0;
+        labels.each(function() {
+            label_array[index].width = this.getBBox().width;
+            label_array[index].height = this.getBBox().height;
+            index += 1;
+        });
+
+        // Draw data points
+        circ = svg.selectAll(".circ")
+            .data(label_array)
+            .enter().append("circle")
+            .attr("class", ".circ")
+            .attr("r", 20.0)
+            .attr("cx", function(d) { return (d.x); })
+            .attr("cy", function(d) { return (d.y - offset); })
+            .style("fill", 'red')
+            .attr('opacity',0.0);
+
+        // Draw links
+        links = svg.selectAll(".link")
+            .data(label_array)
+            .enter()
+            .append("line")
+            .attr("class", "link")
+            .attr("x1", function(d) { return (d.x); })
+            .attr("y1", function(d) { return (d.y); })
+            .attr("x2", function(d) { return (d.x); })
+            .attr("y2", function(d) { return (d.y); })
+            .attr("stroke-width", 0.6)
+            .attr("stroke", "gray");
+        
+    };
+
+    // Start button function
+    d3.select("#start").on("click",function() {
+
+        // Get user-defined parameters
+        var nlabels = document.getElementById('n_labels').value;
+        var is_uniform = document.getElementById('uniform').checked;
+        var nsweeps = document.getElementById('n_sweeps').value;
+
+        // Randomly distribute data
+        randomize(nlabels, is_uniform);
+
+        // Setup labels
+        var sim_ann = d3.labeler()
+            .label(label_array)
+            .anchor(anchor_array)
+            .width(width)
+            .height(height)
+            .start(nsweeps);
+
+        // Redraw
+        redrawLabels();
+
+        });
+    
+    // Default starting parameters
+    // 50 labels, uniformly distributed in x, y
+    randomize(50, true);
+
+    var sim_ann = d3.labeler()
+            .label(label_array)
+            .anchor(anchor_array)
+            .width(width)
+            .height(height)
+            sim_ann.start(1000);
+            
+    redrawLabels();
+
+</script>
