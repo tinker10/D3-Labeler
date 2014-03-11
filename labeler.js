@@ -253,6 +253,11 @@ d3.labeler = function() {
       if (typeof anc[i] == 'undefined') {
         anc[i] = { x: lab[i].x, y: lab[i].y, r:0 };
       }
+      // default width and height based on label length
+      if ((typeof lab[i].width == 'undefined') || (typeof lab[i].height == 'undefined')) {
+        if (typeof lab[i].width == 'undefined') lab[i].width = lab[i].name.length*6;
+        if (typeof lab[i].height == 'undefined') lab[i].height = 8;
+      }
     }
     return labeler;
   };
