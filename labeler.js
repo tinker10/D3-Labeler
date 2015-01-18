@@ -248,6 +248,12 @@ d3.labeler = function() {
   // users insert label positions
     if (!arguments.length) return lab;
     lab = x;
+    // default anchor: same x,y, and r=0
+    for (var i in lab) {
+      if (typeof anc[i] == 'undefined') {
+        anc[i] = { x: lab[i].x, y: lab[i].y, r:0 };
+      }
+    }
     return labeler;
   };
 
