@@ -1,0 +1,206 @@
+<!DOCTYPE html>
+<meta charset="utf-8">
+
+<head>
+
+    <title>D3-Labeler-Canvas</title>
+
+    <style>
+
+        body {
+            font: 10px sans-serif;
+        }
+
+        .axis path,
+        .axis line {
+            fill: none;
+            stroke: #000;
+            shape-rendering: crispEdges;
+        }
+
+
+        h2 {
+            font-size: 22px;
+        }
+
+        div {
+            margin-top: 35px;
+            margin-bottom: 0px;
+            margin-left: 150px;
+        }
+
+        p {
+            font-family: sans-serif;
+            font-size: 14px;
+        }
+
+    </style>
+</head>
+
+<body>
+
+<div>
+
+    <h2>D3-Labeler-Canvas</h2>
+
+    <p>A D3 plug-in for automatic label placement using simulated annealing that easily incorporates into existing D3
+        code, with <br> syntax mirroring other D3 layouts.</p>
+
+    <form>
+        Number of labels: <input type="text" id="n_labels" value=50 size="6"> &nbsp;&nbsp;|&nbsp;&nbsp;
+        <input type="radio" name="dist" id="uniform" value="Uniform" checked="checked">Uniform&nbsp;&nbsp;<input
+            type="radio" name="dist" id="gaussian" value="Gaussian">Gaussian&nbsp;&nbsp;|&nbsp;&nbsp;
+        Number of MC sweeps: <input type="text" id="n_sweeps" value=1000 size="6"> &nbsp;&nbsp;|&nbsp;&nbsp;
+        <button type="button" id="start">Label</button>
+    </form>
+
+</div>
+
+<script src="http://d3js.org/d3.v3.min.js" charset="utf-8"></script>
+<script src="labeler.js"></script>
+<script>
+
+    // Global variables
+    var anchor_array = [],
+            label_array = [],
+            margin = {top: 20, right: 300, bottom: 60, left: 150},
+            width = 1240 - margin.left - margin.right,
+            height = 530 - margin.top - margin.bottom,
+            x_mean = width / 2,
+            y_mean = height / 2,
+            offset = 4,
+            radius = 7;
+
+    var anchor_data, labels, circ, links, bounds;
+
+
+    var canvas = d3.select("body").append("canvas")
+            .attr("width", width)
+            .attr("height", height);
+
+    var context = canvas.node().getContext("2d");
+
+    // Functions
+
+    function gaussian() {
+        // Box-Muller transformation
+        do
+        {
+            u = 2 * Math.random() - 1;
+            v = 2 * Math.random() - 1;
+            r = u * u + v * v;
+        }
+        while (r >= 1.0);
+
+        var c = Math.sqrt(-2 * Math.log(r) / r);
+        return u * c;
+    }
+
+
+    function randomize(count, is_uniform) {
+        anchor_array = [];
+        label_array = [];
+
+        for (var i = 0; i < count; i++) {
+
+            var xval, yval;
+
+            if (is_uniform) {
+                // Uniformly distributed of x, y
+                do {
+                    xval = Math.random() * width;
+                } while (xval < 10 || xval > width - 60);
+
+                do {
+                    yval = Math.random() * width;
+                } while (yval < 28 || yval > height - 15);
+
+            } else {
+                // Gaussian distributed x, y
+                do {
+                    xval = x_mean + gaussian() * width / 6;
+                } while (xval < 10 || xval > width - 60);
+
+                do {
+                    yval = y_mean + gaussian() * height / 6;
+                } while (yval < 28 || yval > height - 15);
+
+            }
+
+            // Put label and anchor positions into arrays
+            anchor_array.push({x: xval, y: yval, r: radius});
+            label_array.push({
+                x: xval,
+                y: yval,
+                x_start: xval,
+                y_start: yval,
+                name: "Node " + String(i),
+                width: 0.0,
+                height: 0.0
+            });
+        }
+        // Defining width and height from the font size
+        for (var i = 0; i < label_array.length; i++) {
+          label_array[i].width = 14 * label_array[i].name.length;
+          label_array[i].height = 14;
+        }
+        // Setup labels
+        d3.labeler()
+                .label(label_array)
+                .anchor(anchor_array)
+                .width(width)
+                .height(height)
+                .start(document.getElementById('n_sweeps').value);
+        context.clearRect(0, 0, width, height);
+
+        context.beginPath();
+        context.rect(0, 0, width, height);
+        context.fillStyle = "#ffffff";
+        context.fill();
+        context.lineWidth = 1;
+        context.strokeStyle = 'black';
+        context.stroke();
+        context.closePath();
+
+
+        for (var i = 0; i < anchor_array.length; i++) {
+            context.beginPath();
+            context.arc(anchor_array[i].x, anchor_array[i].y, anchor_array[i].r, 0, 2 * Math.PI, false);
+            context.fillStyle = 'green';
+            context.fill();
+            context.closePath();
+        }
+        for (var i = 0; i < label_array.length; i++) {
+            context.font = '14px sans-serif';
+            context.fillStyle = 'black';
+            context.fillText(label_array[i].name, label_array[i].x, label_array[i].y);
+
+
+            context.beginPath();
+            context.moveTo(label_array[i].x_start, label_array[i].y_start);
+            context.lineTo(label_array[i].x, label_array[i].y);
+            context.lineWidth = 0.6;
+            context.stroke();
+            context.closePath();
+
+        }
+    }
+    ;
+
+    // Start button function
+    d3.select("#start").on("click", function () {
+
+        // Get user-defined parameters
+        nlabels = document.getElementById('n_labels').value;
+        is_uniform = document.getElementById('uniform').checked;
+
+        // Randomly distribute data
+        randomize(nlabels, is_uniform);
+
+    });
+
+    // Default starting parameters
+    // 50 labels, uniformly distributed in x, y
+    randomize(50, true);
+
+</script>
