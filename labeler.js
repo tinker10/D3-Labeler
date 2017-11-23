@@ -9,27 +9,30 @@ d3.labeler = function() {
 
   var max_move = 5.0,
       max_angle = 0.5,
-      acc = 0;
+      acc = 0,
       rej = 0;
 
   // weights
-  var w_len = 0.2, // leader line length 
+  var w_len = 0.2, // leader line length
       w_inter = 1.0, // leader line intersection
       w_lab2 = 30.0, // label-label overlap
-      w_lab_anc = 30.0; // label-anchor overlap
+      w_lab_anc = 30.0, // label-anchor overlap
+      w_overlap_graph_bounds = 50.0, // label-svg bounds overlap
       w_orient = 3.0; // orientation bias
 
   // booleans for user defined functions
   var user_energy = false,
       user_schedule = false;
 
-  var user_defined_energy, 
+  var user_defined_energy,
       user_defined_schedule;
+
+  var force_bounds = false;
 
   energy = function(index) {
   // energy function, tailored for label placement
 
-      var m = lab.length, 
+      var m = lab.length,
           ener = 0,
           dx = lab[index].x - anc[index].x,
           dy = anc[index].y - lab[index].y,
@@ -85,6 +88,14 @@ d3.labeler = function() {
           ener += (overlap_area * w_lab_anc);
 
       }
+
+      if (force_bounds && (x21 <= 0 || x22 >= w || y22 >= h || y21 <= 0)) {
+          x_overlap = Math.min(w,x22) - Math.max(0,x21);
+          y_overlap = Math.min(h,y22) - Math.max(0,y21);
+          overlap_area = x_overlap * y_overlap;
+          ener += (lab[index].width * lab[index].height - overlap_area) * w_overlap_graph_bounds;
+      }
+
       return ener;
   };
 
@@ -92,7 +103,7 @@ d3.labeler = function() {
   // Monte Carlo translation move
 
       // select a random label
-      var i = Math.floor(Math.random() * lab.length); 
+      var i = Math.floor(Math.random() * lab.length);
 
       // save old coordinates
       var x_old = lab[i].x;
@@ -108,10 +119,12 @@ d3.labeler = function() {
       lab[i].y += (Math.random() - 0.5) * max_move;
 
       // hard wall boundaries
-      if (lab[i].x > w) lab[i].x = x_old;
-      if (lab[i].x < 0) lab[i].x = x_old;
-      if (lab[i].y > h) lab[i].y = y_old;
-      if (lab[i].y < 0) lab[i].y = y_old;
+      if (!force_bounds) {
+          if (lab[i].x > w) lab[i].x = x_old;
+          if (lab[i].x < 0) lab[i].x = x_old;
+          if (lab[i].y > h) lab[i].y = y_old;
+          if (lab[i].y < 0) lab[i].y = y_old;
+      }
 
       // new energy
       var new_energy;
@@ -136,7 +149,7 @@ d3.labeler = function() {
   // Monte Carlo rotation move
 
       // select a random label
-      var i = Math.floor(Math.random() * lab.length); 
+      var i = Math.floor(Math.random() * lab.length);
 
       // save old coordinates
       var x_old = lab[i].x;
@@ -166,10 +179,12 @@ d3.labeler = function() {
       lab[i].y = y_new + anc[i].y
 
       // hard wall boundaries
-      if (lab[i].x > w) lab[i].x = x_old;
-      if (lab[i].x < 0) lab[i].x = x_old;
-      if (lab[i].y > h) lab[i].y = y_old;
-      if (lab[i].y < 0) lab[i].y = y_old;
+      if (!force_bounds) {
+          if (lab[i].x > w) lab[i].x = x_old;
+          if (lab[i].x < 0) lab[i].x = x_old;
+          if (lab[i].y > h) lab[i].y = y_old;
+          if (lab[i].y < 0) lab[i].y = y_old;
+      }
 
       // new energy
       var new_energy;
@@ -187,7 +202,7 @@ d3.labeler = function() {
         lab[i].y = y_old;
         rej += 1;
       }
-      
+
   };
 
   intersect = function(x1, x2, x3, x4, y1, y2, y3, y4) {
@@ -222,7 +237,7 @@ d3.labeler = function() {
           initialT = 1.0;
 
       for (var i = 0; i < nsweeps; i++) {
-        for (var j = 0; j < m; j++) { 
+        for (var j = 0; j < m; j++) {
           if (Math.random() < 0.5) { mcmove(currT); }
           else { mcrotate(currT); }
         }
@@ -240,7 +255,7 @@ d3.labeler = function() {
   labeler.height = function(x) {
   // users insert graph height
     if (!arguments.length) return h;
-    h = x;    
+    h = x;
     return labeler;
   };
 
@@ -272,6 +287,11 @@ d3.labeler = function() {
     user_defined_schedule = x;
     user_schedule = true;
     return labeler;
+  };
+
+  labeler.force_bounds = function (flag) {
+      force_bounds = !!flag;
+      return labeler;
   };
 
   return labeler;
