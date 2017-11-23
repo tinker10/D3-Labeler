@@ -61,6 +61,7 @@ p {
 <p>A D3 plug-in for automatic label placement using simulated annealing that easily incorporates into existing D3 code, with <br> syntax mirroring other D3 layouts.</p>
 
 <form>
+Force bounds: <input type="checkbox" id="bounds" value="false">&nbsp;|&nbsp;
 Number of labels: <input type="text" id="n_labels" value=50 size="6"> &nbsp;&nbsp;|&nbsp;&nbsp;
 <input type="radio" name="dist" id="uniform" value="Uniform" checked="checked">Uniform&nbsp;&nbsp;<input type="radio" name="dist" id="gaussian" value="Gaussian">Gaussian&nbsp;&nbsp;|&nbsp;&nbsp; 
 Number of MC sweeps: <input type="text" id="n_sweeps" value=1000 size="6"> &nbsp;&nbsp;|&nbsp;&nbsp;
@@ -241,6 +242,7 @@ Number of MC sweeps: <input type="text" id="n_sweeps" value=1000 size="6"> &nbsp
         var nlabels = document.getElementById('n_labels').value;
         var is_uniform = document.getElementById('uniform').checked;
         var nsweeps = document.getElementById('n_sweeps').value;
+        var force_bounds = document.getElementById('bounds').checked;
 
         // Randomly distribute data
         randomize(nlabels, is_uniform);
